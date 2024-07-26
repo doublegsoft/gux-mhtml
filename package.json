@@ -1,5 +1,5 @@
 {
-  "name": "gux-html",
+  "name": "gux-mhtml",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -12,6 +12,7 @@
   "devDependencies": {
     "@babel/core": "^7.24.7",
     "@babel/preset-env": "^7.24.7",
+    "@wixc3/react-board": "^3.0.0",
     "formidable": "^3.5.1",
     "gulp": "^5.0.0",
     "gulp-babel": "^8.0.0",

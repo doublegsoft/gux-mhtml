@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link rel="shortcut icon" href="img/favicon.png">
+<title>GUX手机应用</title>
+<link rel="stylesheet" href="3rd/bootstrap/bootstrap.min.css">
+<link rel="stylesheet" href="3rd/fontawesome/css/all.min.css">
+<link rel="stylesheet" href="css/gux.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body id="body" data-t class="app header-fixed sidebar-fixed aside-menu-fixed sidebar-lg-show" style="overflow-y: hidden">  
+  <main class="main">
+    <div id="container" class="overflow-y: auto;"></div>
+  </main>
+  <footer>
+    <div class="bottom-navigator">
+      <div class="active-0">
+        <label widget-id="buttonHome" class="active" style="flex: 0 0 25%;">
+          <i class="fas fa-home" style="left: -2px;"></i>
+          <span>首页</span>
+        </label>
+        <label widget-id="buttonComponent" style="flex: 0 0 25%;">
+          <i class="fas fa-window-maximize" style="left: -1px;"></i>
+          <span>组件</span>
+        </label>
+        <label widget-id="buttonApplication" style="flex: 0 0 25%;">
+          <i class="fab fa-app-store-ios" style="left: 1px;"></i>
+          <span>应用</span>
+        </label>
+        <label widget-id="buttonUser" style="flex: 0 0 25%;">
+          <i class="fas fa-user" style="left: 1px;"></i>
+          <span>用户</span>
+        </label>
+        <span style="width: 25%;"></span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
+
+<script src="3rd/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="3rd/handlebars/handlebars-v4.0.11.js"></script>
+<script src="3rd/moment/moment.min.js"></script>
+
+<script src="js/common/xhr.js"></script>
+<script src="js/common/dom.js"></script>
+<script src="js/common/gux.js"></script>
+
+<script src="js/widget/Calendar.js"></script>

@@ -1,0 +1,19 @@
+
+.numpad {
+  overflow: hidden;
+}
+
+.numpad button.number {
+  height: 100%;
+  width: 100%;
+  border: unset;
+  background: var(--color-white);
+  color: var(--color-text-primary);
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.numpad button.number:active {
+  height: 120%;
+  width: 110%;
+}

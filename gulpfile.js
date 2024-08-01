@@ -8,8 +8,7 @@ let babel = require('gulp-babel');
 let uglifycss = require('gulp-uglifycss');
 let concat = require('gulp-concat');
 
-gulp.task('dist', function() {
-  
+gulp.task('dist', async function() {
   gulp.src(['src/js/common/*.js', 'src/js/widget/*.js'])
     .pipe(concat('./gux.desktop.js'))
     .pipe(gulp.dest('./dist/'));
@@ -23,17 +22,14 @@ gulp.task('dist', function() {
     .pipe(gulp.dest('./dist/'));
 
   // desktop css
-  gulp.src(['src/css/gux.css'])
-    .pipe(concat('./gux.desktop.css'))
+  gulp.src(['src/css/*.css'])
+    .pipe(concat('./gux.mobile.css'))
     .pipe(gulp.dest('./dist/'));
 
   gulp.src(['src/css/gux.css'])
-      .pipe(concat('./gux.desktop.min.css'))
+      .pipe(concat('./gux.mobile.min.css'))
       .pipe(uglifycss())
       .pipe(gulp.dest('./dist/'));
 });
 
-// gulp.task('default', ['compress', 'specs']);
-gulp.task('dist', async () => {
-  console.log('gux.desktop was distributed.');
-});
+gulp.task('dist');

@@ -1,0 +1,88 @@
+<div id="pageComponent" class="page" style="overflow-y:auto;">
+  <div widget-id="widgetCalendar"></div>
+  <div class="gx-px-16 gx-fb gx-fs-16">表单</div>
+  <div class="gx-px-16" widget-id="widgetEditableForm"></div>
+</div>
+<script>
+
+function PageComponent() {
+  this.page = document.getElementById('pageComponent');
+}
+
+PageComponent.prototype.initialize = function() {
+  dom.init(this, this.page);
+
+  this.page.style.height = app.getViewHeight() + 'px';
+
+  new Calendar().render(this.widgetCalendar);
+  new TwoColumnForm({
+    fields: [{
+      title: '手机',
+      name: 'mobile',
+      input: 'mobile',
+    },{
+      title: '身份证号',
+      name: 'idnumber',
+      input: 'id',
+    },{
+      title: '性别',
+      name: 'gender',
+      input: 'select',
+      values: [{text: '男', value: '1'},{text: '女', value: '2'}]  
+    },{
+      title: '日期',
+      name: 'date',
+      input: 'date',
+    },{
+      title: '地址',
+      name: 'district',
+      input: 'district',
+    },{
+      title: '体重',
+      name: 'weight',
+      input: 'ruler',
+      range: [30, 180],
+      unit: 'kg',
+    },{
+      title: '身高',
+      name: 'height',
+      input: 'ruler',
+      range: [60, 250],
+      unit: 'cm',
+    },{
+      title: '文本A',
+      name: 'a',
+      input: 'text',
+    },{
+      title: '文本B',
+      name: 'b',
+      input: 'text',
+    },{
+      title: '文本C',
+      name: 'c',
+      input: 'text',
+    },{
+      title: '文本D',
+      name: 'd',
+      input: 'text',
+    },{
+      title: '文本E',
+      name: 'e',
+      input: 'text',
+    }],
+  }).render(this.widgetEditableForm);
+};
+
+PageComponent.prototype.show = function() {
+  this.initialize();
+};
+
+PageComponent.prototype.pull2Refresh = function() {
+  app.switchTab('/mhtml/nowcare/component.html', {
+    title: '组件展示',
+    noPull2Refresh: true,
+  });
+};
+
+pageComponent = new PageComponent();
+</script>

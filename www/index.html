@@ -6,48 +6,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link rel="shortcut icon" href="img/favicon.png">
 <title>GUX手机应用</title>
-<link rel="stylesheet" href="3rd/bootstrap/bootstrap.min.css">
-<link rel="stylesheet" href="3rd/fontawesome/css/all.min.css">
-<link rel="stylesheet" href="css/gux.css">
-<link rel="stylesheet" href="css/style.css">
 </head>
 
-<body id="body" data-t class="app header-fixed sidebar-fixed aside-menu-fixed sidebar-lg-show" style="overflow-y: hidden">  
-  <main class="main">
-    <div id="container" class="overflow-y: auto;"></div>
-  </main>
-  <footer>
-    <div class="bottom-navigator">
-      <div class="active-0">
-        <label widget-id="buttonHome" class="active" style="flex: 0 0 25%;">
-          <i class="fas fa-home" style="left: -2px;"></i>
-          <span>首页</span>
-        </label>
-        <label widget-id="buttonComponent" style="flex: 0 0 25%;">
-          <i class="fas fa-window-maximize" style="left: -1px;"></i>
-          <span>组件</span>
-        </label>
-        <label widget-id="buttonApplication" style="flex: 0 0 25%;">
-          <i class="fab fa-app-store-ios" style="left: 1px;"></i>
-          <span>应用</span>
-        </label>
-        <label widget-id="buttonUser" style="flex: 0 0 25%;">
-          <i class="fas fa-user" style="left: 1px;"></i>
-          <span>用户</span>
-        </label>
-        <span style="width: 25%;"></span>
-      </div>
-    </div>
-  </footer>
+<body style="overflow:hidden;display:flex;align-items:center;justify-content:center;">  
+  <div>
+    <iframe id="application" frameborder="none" src="http://localhost:9098/mhtml/nowcare/index.html" 
+            style="position:relative;z-index:1;">
+    </iframe>
+    <image id="background" src="img/sim/iphone.png" style="position:absolute;top:0;background:transparent;">
+  </div>
 </body>
 </html>
+<script>
+const WIDTH = 462;
+const HEIGHT = 900;
+const INNER_WIDTH = 445 - 15;
+const INNER_HEIGHT = 886 - 12;
+let background = document.getElementById('background');
+let application = document.getElementById('application');
+let height = window.innerHeight;
+let width = window.innerHeight * WIDTH / HEIGHT;
+let innerWidth = width * INNER_WIDTH / WIDTH;
+let innerHeight = height * INNER_HEIGHT / HEIGHT;
 
-<script src="3rd/bootstrap/bootstrap.bundle.min.js"></script>
-<script src="3rd/handlebars/handlebars-v4.0.11.js"></script>
-<script src="3rd/moment/moment.min.js"></script>
+background.style.width = width + 'px';
+background.style.height = height + 'px';
+background.style.left = 'calc(50% - ' + (width / 2) + 'px)';
+application.style.width = (innerWidth + 2) + 'px';
+application.style.height = innerHeight + 'px';
+application.style.top = 5 + 'px';
+application.style.borderRadius = '70px / 60px';// (50 * width / WIDTH) + 'px';
+</script>
 
-<script src="js/common/xhr.js"></script>
-<script src="js/common/dom.js"></script>
-<script src="js/common/gux.js"></script>
-
-<script src="js/widget/Calendar.js"></script>

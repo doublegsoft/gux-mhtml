@@ -28,31 +28,6 @@ gux = {
 
 gux.navigateTo = async function (url, opt, clear) {
   clearTimeout(gux.delayToLoad);
-  // gux.delayToLoad = setTimeout(() => {
-  //   if (typeof clear === "undefined") clear = false;
-  //   let main = document.querySelector('main');
-  //
-  //   if (gux.presentPageObj) {
-  //     gux.presentPageObj.page.classList.remove('in');
-  //     gux.presentPageObj.page.classList.add('out');
-  //   }
-  //   setTimeout(async () => {
-  //     if (gux.presentPageObj) {
-  //       gux.presentPageObj.page.parentElement.style.display = 'none';
-  //     }
-  //     if (gux.presentPageObj && clear !== false) {
-  //       gux.presentPageObj.page.parentElement.remove();
-  //       if (gux.presentPageObj.destroy) {
-  //         gux.presentPageObj.destroy();
-  //       }
-  //       delete gux.presentPageObj;
-  //     }
-  //     let html = await xhr.asyncGet({
-  //       url: url + '?' + new Date().getTime(),
-  //     }, 'GET');
-  //     gux.reload(main, url, html, opt);
-  //   }, 400);
-  // }, 200);
   if (typeof clear === "undefined") clear = false;
   let main = document.querySelector('main');
 
@@ -76,6 +51,33 @@ gux.navigateTo = async function (url, opt, clear) {
     }, 'GET');
     gux.reload(main, url, html, opt);
   }, 400);
+};
+
+gux.switchTab = function(url, opt) {
+  xhr.get({
+    url: url,
+  }).then(resp => {
+    if (opt.title) {
+      pageIndex.setTitle(opt.title);
+    }
+    if (opt.noNavigationBar === true) {
+      pageIndex.hideNavigationBar();
+    } else {
+      pageIndex.showNavigationBar();
+    }
+
+    let page = dom.append(pageIndex.container, resp, true);
+    if (page && page.id) {
+      window[page.id].show(opt.params || {});
+      gux.presentPageObj = window[page.id];
+    }
+
+    if (opt.noPull2Refresh === true) {
+      pageIndex.uninstallPull2Refresh();
+    } else {
+      pageIndex.installPull2Refresh();
+    }
+  });
 };
 
 gux.navigateWidget = function (url, container, opt) {

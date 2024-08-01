@@ -19,9 +19,18 @@
 ** 构造函数，配置项包括：
 */
 function Calendar(opt) {
+  opt = opt || {};
   this.today = moment(new Date());
   this.currentMonth = moment(this.today).startOf('month');
   this.currentIndex = 1;
+  /*!
+  ** 自定义渲染日期单元格。
+  */
+  this.doRenderDate = opt.doRenderDate || function(date) {};
+  /*!
+  ** 点击选择日期后的回调函数。
+  */
+  this.didSelectDate = opt.didSelectDate || function(date) {};
 }
 
 Calendar.prototype.root = function () {
@@ -123,14 +132,21 @@ Calendar.prototype.renderMonth = function(container, month) {
     let date = dom.element(`<div class="date"></div>`);
     let day = (i - weekday + 1);
     if (i >= weekday) {
-      date.innerHTML = day;
+      let datespan = dom.element(`<div></div>`);
+      datespan.innerText = day;
+      date.appendChild(datespan);
     }
     let dateVal = month.format('YYYY-MM-') + (day < 10 ? ('0' + day) : day);
     if (dateVal == this.today.format('YYYY-MM-DD')) {
       date.classList.add('today');
     }
+    
     date.setAttribute('data-calendar-date', dateVal);
     row.appendChild(date);
+    date.onclick = ev => {
+      this.doSelectDate(ev);
+    };
+
     if (i % 7 == 6) {
       container.appendChild(row);
       row = null;
@@ -178,4 +194,12 @@ Calendar.prototype.render = function(containerId, params) {
   let container = dom.find(containerId);
   container.innerHTML = '';
   container.appendChild(this.root);
+};
+
+Calendar.prototype.doSelectDate = function (ev) {
+  this.root.querySelectorAll('div.selected').forEach((elm, idx) => {
+    elm.classList.remove('selected');
+  });
+  let div = dom.ancestor(ev.target, 'div', 'date');
+  div.classList.add('selected');
 };

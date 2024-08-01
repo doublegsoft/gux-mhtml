@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no">
+<link rel="shortcut icon" href="img/favicon.png">
+<title>GUX手机应用</title>
+<link rel="stylesheet" href="/3rd/bootstrap/bootstrap.min.css">
+<link rel="stylesheet" href="/3rd/swiper/swiper-bundle.min.css">
+<link rel="stylesheet" href="/css/gux.css">
+<link rel="stylesheet" href="/css/gux-iconfont.css">
+<link rel="stylesheet" href="/css/gux-calendar.css">
+<link rel="stylesheet" href="/css/gux-numpad.css">
+<link rel="stylesheet" href="/css/gux-popup.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body class="app header-fixed sidebar-fixed aside-menu-fixed sidebar-lg-show" style="overflow-y: hidden">  
+  <header>
+    <div id="navigation-bar" class="gx-bg-primary gx-d-flex" style="height:96px;">
+      <div style="width: 100px;"></div>
+      <div class="gx-d-flex gx-py-8" style="flex: 1;align-items: end;justify-content: center;">
+        <div id="navigation-bar-title" class="gx-text-inverse gx-fs-22"></div>
+      </div>
+      <div style="width: 100px;"></div>
+    </div>
+  </header>
+  <div id="refresh-indicator">
+    <div>Pull to refresh</div>
+  </div>  
+  <main id="pull-to-refresh" class="main" style="transform:translateY(-1px);">
+    <div id="container" class="overflow-y: auto;"></div>
+  </main>
+  <footer>
+    <div widget-id="bottomNavigator" class="bottom-navigator">
+      <div class="active-0">
+        <label widget-id="buttonHome" class="active" style="flex: 0 0 25%;">
+          <i class="gx-i gx-i-home gx-fs-36" style="left: -2px;"></i>
+          <span>首页</span>
+        </label>
+        <label widget-id="buttonComponent" style="flex: 0 0 25%;">
+          <i class="gx-i gx-i-comment gx-fs-36" style="left: -1px;"></i>
+          <span>组件</span>
+        </label>
+        <label widget-id="buttonApplication" style="flex: 0 0 25%;">
+          <i class="gx-i gx-i-community gx-fs-36" style="left: 1px;"></i>
+          <span>应用</span>
+        </label>
+        <label widget-id="buttonUser" style="flex: 0 0 25%;">
+          <i class="gx-i gx-i-user gx-fs-36" style="left: 1px;"></i>
+          <span>用户</span>
+        </label>
+        <span style="width: 25%;"></span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
+
+<script src="/3rd/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="/3rd/swiper/swiper-bundle.min.js"></script>
+<script src="/3rd/handlebars/handlebars-v4.0.11.js"></script>
+<script src="/3rd/moment/moment.min.js"></script>
+<script src="/3rd/rolldate/rolldate.js"></script>
+<script src="/3rd/ruler/ruler.js"></script>
+
+<script src="/js/common/xhr.js"></script>
+<script src="/js/common/dom.js"></script>
+<script src="/js/common/validation.js"></script>
+<script src="/js/common/gux.js"></script>
+
+<script src="/js/widget/Calendar.js"></script>
+<script src="/js/widget/TwoColumnForm.js"></script>
+<script src="/js/widget/CascadePicker.js"></script>
+<script src="/js/widget/DistrictPicker.js"></script>
+<script src="/js/widget/PopupRuler.js"></script>
+<script src="/js/widget/Numpad.js"></script>
+
+<script>
+const REFRESH_INDICATOR_HEIGHT = 240;
+
+let startY = 0;
+let currentY = 0;
+let isDragging = false;
+
+function PageIndex() {
+
+}
+
+PageIndex.prototype.initialize = async function (params) {
+  let main = document.querySelector('main');
+  let header = document.querySelector('header');
+  let footer = document.querySelector('footer');
+
+  this.bottomNavigator = document.querySelector('[widget-id=bottomNavigator]');
+  this.buttonHome = document.querySelector('[widget-id=buttonHome]');
+  this.buttonComponent = document.querySelector('[widget-id=buttonComponent]');
+  this.buttonApplication = document.querySelector('[widget-id=buttonApplication]');
+  this.buttonUser = document.querySelector('[widget-id=buttonUser]');
+  this.buttonSettings = document.querySelector('[widget-id=buttonSettings]');
+
+  this.navigationBar = document.getElementById('navigation-bar');
+  this.navigationBarTitle = document.getElementById('navigation-bar-title');
+  this.refreshContainer = document.getElementById('pull-to-refresh');
+  this.refreshIndicator = document.getElementById('refresh-indicator');
+  this.container = document.getElementById('container');
+
+  // 初始化环境
+  // header.style.width = window.clientWidth + 'px';
+  // footer.style.width = window.clientWidth + 'px';
+  main.style.height = (window.innerHeight - 0) + 'px';
+
+  // 底部导航
+  let navbar = document.querySelector(".bottom-bar")
+  let navbarItems = document.querySelectorAll("li", navbar);
+
+  navbarItems.forEach((li, index) => {
+    li.addEventListener("click" , e =>{
+      e.preventDefault();
+      navbar.querySelector(".active").classList.remove("active");
+      li.classList.add("active");
+
+      const indicator = document.querySelector(".indicator");
+      indicator.style.transform = `translateX(calc(${li.offsetLeft}px + 0px))`;
+    });
+    if (index == 0) {
+      const indicator = document.querySelector(".indicator");
+      indicator.style.transform = `translateX(calc(${li.offsetLeft}px + 0px))`;
+    }
+  });
+
+  /*!
+  ** 
+  */
+  dom.bind(this.buttonHome, 'click', ev => {
+    // if (this.buttonHome.parentElement.classList.contains('active-0')) return;
+    this.buttonHome.parentElement.className = 'active-0';
+    this.buttonHome.parentElement.querySelectorAll('label').forEach(el => {
+      el.className = '';
+    });
+    this.buttonHome.classList.add('active');
+    this.switchTab('/mhtml/nowcare/home.html', {
+      noNavigationBar: true,
+    });
+  });
+
+  dom.bind(this.buttonComponent, 'click', ev => {
+    if (this.buttonComponent.parentElement.classList.contains('active-1')) return;
+    this.buttonComponent.parentElement.className = 'active-1';
+    this.buttonComponent.parentElement.querySelectorAll('label').forEach(el => {
+      el.className = '';
+    });
+    this.buttonComponent.classList.add('active');
+    this.switchTab('/mhtml/nowcare/component.html', {
+      title: '组件展示',
+      noPull2Refresh: true,
+    });
+  });
+
+  dom.bind(this.buttonApplication, 'click', ev => {
+    if (this.buttonApplication.parentElement.classList.contains('active-2')) return;
+    this.buttonApplication.parentElement.className = 'active-2';
+    this.buttonApplication.parentElement.querySelectorAll('label').forEach(el => {
+      el.className = '';
+    });
+    this.buttonApplication.classList.add('active');
+  });
+
+  dom.bind(this.buttonUser, 'click', ev => {
+    if (this.buttonUser.parentElement.classList.contains('active-3')) return;
+    this.buttonUser.parentElement.className = 'active-3';
+    this.buttonUser.parentElement.querySelectorAll('label').forEach(el => {
+      el.className = '';
+    });
+    this.buttonUser.classList.add('active');
+  });
+
+  dom.bind(this.buttonSettings, 'click', ev => {
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.openFavourite) {
+      window.webkit.messageHandlers.openFavourite.postMessage({
+        "message": ""
+      });
+    }
+  });
+
+  /*!
+  ** pull-to-refresh functions.
+  */
+  this.installPull2Refresh();
+  
+  this.switchTab('/mhtml/nowcare/home.html', {
+    noNavigationBar: true,
+  })
+};
+
+PageIndex.prototype.installPull2Refresh = function (success) {
+  this.refreshContainer.ontouchstart = e => {
+    startY = e.touches[0].clientY;
+    isDragging = true;
+  };
+
+  this.refreshContainer.ontouchmove = e => {
+    if (!isDragging) return;
+    if (!gux.presentPageObj.topmostElement) return;
+    let rect = gux.presentPageObj.topmostElement.getBoundingClientRect();
+
+    let threshold = -5;
+    if (gux.presentPageObj.noNavigationBar === true) {
+      threshold = 90;
+    }
+    if (rect.y <= threshold) {
+      return;
+    }
+    
+
+    currentY = e.touches[0].clientY;
+    const deltaY = currentY - startY;
+    if (deltaY > 0) {
+      e.preventDefault();
+      if (deltaY > REFRESH_INDICATOR_HEIGHT) {
+        this.refreshIndicator.style.display = 'flex';
+        this.refreshIndicator.children[0].textContent = 'Release to refresh';
+        this.refreshIndicator.style.height = (REFRESH_INDICATOR_HEIGHT / 2) + 'px';
+      } else {
+        if (deltaY <= REFRESH_INDICATOR_HEIGHT / 2) {
+          return;
+        }
+        this.refreshIndicator.style.display = 'flex';
+        this.refreshIndicator.style.height = deltaY + 'px';
+      }
+    }
+  };
+
+  this.refreshContainer.ontouchend = e => {
+    isDragging = false;
+    const deltaY = currentY - startY;
+
+    if (deltaY > REFRESH_INDICATOR_HEIGHT) {
+      this.refreshIndicator.children[0].textContent = 'Refreshing...';
+      // Simulate a refresh action
+      setTimeout(() => {
+        this.refreshContainer.style.transform = 'translateY(-1px)';
+        this.refreshIndicator.style.display = 'none';
+
+        if (gux.presentPageObj) {
+          gux.presentPageObj.pull2Refresh();
+        }
+      }, 1000);
+    } else {
+      this.refreshContainer.style.transform = 'translateY(-1px)';
+      this.refreshIndicator.style.display = 'none';
+    }
+  };
+};
+
+PageIndex.prototype.uninstallPull2Refresh = function (success) {
+  this.refreshContainer.ontouchstart = e => {};
+  this.refreshContainer.ontouchmove = e => {};
+  this.refreshContainer.ontouchend = e => {};
+};
+
+PageIndex.prototype.showNavigationBar = async function (params) {
+  this.navigationBar.style.display = '';
+};
+
+PageIndex.prototype.hideNavigationBar = async function (params) {
+  this.navigationBar.style.display = 'none';
+};
+
+PageIndex.prototype.setTitle = function (title) {
+  this.navigationBarTitle.innerText = title || '';
+};
+
+PageIndex.prototype.switchTab = function (url, opt) {
+  gux.switchTab(url, opt);
+};
+
+PageIndex.prototype.show = async function (params) {
+  this.initialize(params);
+  this.buttonHome.click();
+};
+
+PageIndex.prototype.getViewHeight = function (params) {
+  let rectTop = this.navigationBar.getBoundingClientRect();
+  let rectBot = this.bottomNavigator.getBoundingClientRect();
+  return window.innerHeight - rectTop.height - rectBot.height - 24;
+};
+
+pageIndex = new PageIndex();
+pageIndex.show({});
+
+const app = pageIndex;
+</script>

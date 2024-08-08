@@ -15,7 +15,7 @@ function PopupRuler(opt) {
 
 PopupRuler.prototype.root = function () {
   let ret = dom.templatize(`
-    <div class="popup-container">
+    <div class="gx popup-container">
       <div class="popup-mask"></div>
       <div class="popup-bottom in">
         <div class="popup-title">
@@ -66,10 +66,10 @@ PopupRuler.prototype.show = function(container) {
 
   let content = dom.find('.popup-content', root);
   let value = dom.find('.value', root);
-  value.innerText = this.value;
+  value.innerText = this.value || this.range[0];
   ruler.initPlugin({
     el: content, //容器id
-    startValue: this.value,
+    startValue: this.value || this.range[0],
     maxScale: this.range[1], //最大刻度
     region: [this.range[0], this.range[1]], //选择刻度的区间范围
     background: "#fff",

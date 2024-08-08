@@ -402,9 +402,12 @@ TwoColumnForm.prototype.buildRuler = function (field) {
     input.setAttribute('placeholder', '');
     return ret;
   }
+  if (field.value) {
+    input.value = field.value;
+  }
   dom.bind(ret, 'click', ev => {
     new PopupRuler({
-      range: field.range || [30, 150],
+      range: field.range,
       height: 70,
       value: input.value,
       success: (val) => {

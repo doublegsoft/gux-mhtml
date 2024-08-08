@@ -31,18 +31,39 @@
 }
 
 .calendar .dates .date {
+  display: flex;
   height: 48px;
   line-height: 48px;
   width: calc(100% / 7);
   text-align: center;
 }
 
+.calendar .dates .date div {
+  margin: auto;
+}
+
 .calendar .today {
-  background: var(--color-primary);
-  color: var(--color-white);
   position: sticky;
   top: 0;
   z-index: 9999;
+}
+
+.calendar .today div {
+  background: var(--color-primary);
+  color: var(--color-white);
+  width: 36px;
+  height: 36px;
+  line-height: 36px;
+  border-radius: 9999px;
+}
+
+.calendar .selected div {
+  background: var(--color-info);
+  color: var(--color-white);
+  width: 36px;
+  height: 36px;
+  line-height: 36px;
+  border-radius: 9999px;
 }
 
 .weekly {
@@ -349,10 +370,23 @@
   font-weight: bold;
 }
 
-.popup-title button.cancel {
+.popup-title button.clear {
   position: absolute;
   left: 0;
   top: 0;
+  padding: 0 15px;
+  color: var(--color-error);
+  background: var(--color-white);
+  font-size: 16px;
+  font-weight: bold;
+  border: unset;
+  height: 56px;
+}
+
+.popup-title button.cancel {
+  position: absolute;
+  left: auto;
+  right: 62px;
   padding: 0 15px;
   color: var(--color-error);
   background: var(--color-white);

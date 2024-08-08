@@ -1,0 +1,114 @@
+<div id="pageHome" class="page">
+  <div widget-id="widgetAd" class="swiper ad" style="height: 200px;">
+    <div class="swiper-wrapper">
+      <div class="swiper-slide">
+        <img src="http://localhost:9098/img/750x300/1.jpg" style="width:100%;height:100%;">
+      </div>
+      <div class="swiper-slide">
+        <img src="http://localhost:9098/img/750x300/2.jpg" style="width:100%;height:100%;">
+      </div>
+      <div class="swiper-slide">
+        <img src="http://localhost:9098/img/750x300/3.jpg" style="width:100%;height:100%;">
+      </div>
+    </div>
+    <div class="swiper-pagination"></div>
+  </div>
+  <div class="gx-px-32">
+    <h1 class="gx-mt-16">欢迎回来, <span class="username">谢门</span></h1>
+    <p>今天感觉怎么样？</p>
+  </div>
+
+  <!-- 入口按钮 -->
+  <div class="gx-d-flex">
+    <div widget-id="buttonHappy" class="gx-d-flex" style="flex: 1;text-align: center;flex-direction: column;">
+      <div class="gx-d-flex gx-m-auto" style="width:69px;height:72px;background:#EF5DA8;border-radius:25px;">
+        <img src="/img/demo/mental/happy.png" style="width:39px;height:39px;" class="gx-m-auto">
+      </div>
+      <span class="gx-fs-16 gx-mt-8">开心</span>
+    </div>
+    <div class="gx-d-flex" style="flex: 1;text-align: center;flex-direction: column;">
+      <div class="gx-d-flex gx-m-auto" style="width:69px;height:72px;background:#AEAFF7;border-radius:25px;">
+        <img src="/img/demo/mental/calm.png" style="width:39px;height:39px;" class="gx-m-auto">
+      </div>
+      <span class="gx-fs-16 gx-mt-8">冷静</span>
+    </div>
+    <div class="gx-d-flex" style="flex: 1;text-align: center;flex-direction: column;">
+      <div class="gx-d-flex gx-m-auto" style="width:69px;height:72px;background:#F09E54;border-radius:25px;">
+        <img src="/img/demo/mental/relax.png" style="width:39px;height:39px;" class="gx-m-auto">
+      </div>
+      <span class="gx-fs-16 gx-mt-8">放松</span>
+    </div>
+    <div class="gx-d-flex" style="flex: 1;text-align: center;flex-direction: column;">
+      <div class="gx-d-flex gx-m-auto" style="width:69px;height:72px;background:#A0E3E2;border-radius:25px;">
+        <img src="/img/demo/mental/focus.png" style="width:39px;height:39px;" class="gx-m-auto">
+      </div>
+      <span class="gx-fs-16 gx-mt-8">专注</span>
+    </div>
+  </div>
+
+  <div class="gx-w-full gx-p-16">
+    <div widget-id="widgetTabsNavigator"></div>
+    <div widget-id="widgetTabsContent"></div>
+  </div>
+</div>
+<script>
+
+function PageHome() {
+  this.page = document.getElementById('pageHome');
+}
+
+PageHome.prototype.initialize = function() {
+  dom.init(this, this.page);
+  this.topmostElement = this.widgetAd;
+
+  let swiper = new Swiper(".ad", {
+     loop: true,
+    pagination: {
+      el: ".swiper-pagination",
+    },
+  });
+
+  new Tabs({
+    navigatorId: this.widgetTabsNavigator,
+    contentId: this.widgetTabsContent,
+    autoClear: true,
+    tabs: [{
+      id: 'tab-a',
+      title: '喝水',
+      success: (opt) => {
+        console.log(opt);
+      },
+    },{
+      id: 'tab-b',
+      title: '吃饭',
+      success: (opt) => {
+        console.log(opt);
+      },
+    },{
+      id: 'tab-c',
+      title: '奶茶',
+      success: (opt) => {
+        console.log(opt);
+      },
+    }]
+  }).render();
+
+  dom.bind(this.buttonHappy, 'click', ev => {
+    gux.navigateTo('/mhtml/gux/component/index.html', {
+      title: '组件展示',
+    });
+  });
+};
+
+PageHome.prototype.show = function() {
+  this.initialize();
+};
+
+PageHome.prototype.pull2Refresh = function() {
+  pageIndex.switchTab('/mhtml/nowcare/home.html', {
+    noNavigationBar: true,
+  })
+};
+
+pageHome = new PageHome();
+</script>

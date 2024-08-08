@@ -1,9 +1,9 @@
 
-.numpad {
+.gx.numpad {
   overflow: hidden;
 }
 
-.numpad button.number {
+.gx.numpad button.number {
   height: 100%;
   width: 100%;
   border: unset;
@@ -13,7 +13,7 @@
   font-weight: bold;
 }
 
-.numpad button.number:active {
+.gx.numpad button.number:active {
   height: 120%;
   width: 110%;
 }

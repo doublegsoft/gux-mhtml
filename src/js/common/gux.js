@@ -46,7 +46,7 @@ gux.navigateTo = async function (url, opt, clear) {
       }
       delete gux.presentPageObj;
     }
-    let html = await xhr.asyncGet({
+    let html = await xhr.get({
       url: url + (url.indexOf('?') == -1 ? '?' : '&') + new Date().getTime(),
     }, 'GET');
     gux.reload(main, url, html, opt);
@@ -146,7 +146,7 @@ gux.reload = function (main, url, html, opt) {
   gux.presentPageObj = window[pageId];
   gux.presentPageObj.page.classList.add('in');
 
-  let params = utils.getParameters(url);
+  let params = util.getParameters(url);
   gux.presentPageObj.show(params);
 
   gux.setTitleAndIcon(opt.title, opt.icon);
@@ -170,7 +170,7 @@ gux.replace = function (container, url, html, opt) {
     fragmentContainer.setAttribute('gux-page-icon', opt.icon || '');
   }page.classList.add('in');
 
-  let params = utils.getParameters(url);
+  let params = util.getParameters(url);
   window[pageId].show(params);
 
   // pass options to page object

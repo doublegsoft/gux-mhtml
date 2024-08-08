@@ -35,7 +35,7 @@ function Calendar(opt) {
 
 Calendar.prototype.root = function () {
   let ret = dom.templatize(`
-    <div class="calendar">
+    <div class="gx calendar">
       <div class="title"></div>
       <div class="weekdays" style="position: sticky; top: 0;z-index: 10;">
         <div class="weekday">日</div>

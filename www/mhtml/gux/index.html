@@ -65,6 +65,7 @@
 <script src="/3rd/rolldate/rolldate.js"></script>
 <script src="/3rd/ruler/ruler.js"></script>
 
+<script src="/js/common/util.js"></script>
 <script src="/js/common/xhr.js"></script>
 <script src="/js/common/dom.js"></script>
 <script src="/js/common/validation.js"></script>
@@ -76,6 +77,7 @@
 <script src="/js/widget/DistrictPicker.js"></script>
 <script src="/js/widget/PopupRuler.js"></script>
 <script src="/js/widget/Numpad.js"></script>
+<script src="/js/widget/Tabs.js"></script>
 
 <script>
 const REFRESH_INDICATOR_HEIGHT = 240;
@@ -140,7 +142,7 @@ PageIndex.prototype.initialize = async function (params) {
       el.className = '';
     });
     this.buttonHome.classList.add('active');
-    this.switchTab('/mhtml/nowcare/home.html', {
+    this.switchTab('/mhtml/gux/home.html', {
       noNavigationBar: true,
     });
   });
@@ -152,7 +154,7 @@ PageIndex.prototype.initialize = async function (params) {
       el.className = '';
     });
     this.buttonComponent.classList.add('active');
-    this.switchTab('/mhtml/nowcare/component.html', {
+    this.switchTab('/mhtml/gux/component.html', {
       title: '组件展示',
       noPull2Refresh: true,
     });
@@ -188,10 +190,6 @@ PageIndex.prototype.initialize = async function (params) {
   ** pull-to-refresh functions.
   */
   this.installPull2Refresh();
-  
-  this.switchTab('/mhtml/nowcare/home.html', {
-    noNavigationBar: true,
-  })
 };
 
 PageIndex.prototype.installPull2Refresh = function (success) {
@@ -212,7 +210,6 @@ PageIndex.prototype.installPull2Refresh = function (success) {
     if (rect.y <= threshold) {
       return;
     }
-    
 
     currentY = e.touches[0].clientY;
     const deltaY = currentY - startY;

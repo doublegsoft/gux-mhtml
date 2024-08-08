@@ -13,9 +13,9 @@ function Numpad(opt) {
 
 Numpad.prototype.root = function () {
   let ret = dom.templatize(`
-    <div class="popup-container">
+    <div class="gx popup-container">
       <div class="popup-mask"></div>
-      <div class="popup-bottom numpad in">
+      <div class="popup-bottom in">
         <div class="popup-title">
           <button class="clear">清除</button>
           <span class="value"></span>
@@ -23,7 +23,7 @@ Numpad.prototype.root = function () {
           <button class="cancel">取消</button>
           <button class="confirm">确认</button>
         </div>
-        <div class="gx-d-flex gx-w-full" style="flex-wrap: wrap!important;">
+        <div class="gx-d-flex gx-w-full gx numpad" style="flex-wrap: wrap!important;">
           <div class="gx-24-08" style="line-height: 48px;">
             <button class="number">1</button>
           </div>

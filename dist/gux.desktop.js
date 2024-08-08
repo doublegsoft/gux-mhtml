@@ -1943,9 +1943,18 @@ if (typeof module !== 'undefined') {
 ** 构造函数，配置项包括：
 */
 function Calendar(opt) {
+  opt = opt || {};
   this.today = moment(new Date());
   this.currentMonth = moment(this.today).startOf('month');
   this.currentIndex = 1;
+  /*!
+  ** 自定义渲染日期单元格。
+  */
+  this.doRenderDate = opt.doRenderDate || function(date) {};
+  /*!
+  ** 点击选择日期后的回调函数。
+  */
+  this.didSelectDate = opt.didSelectDate || function(date) {};
 }
 
 Calendar.prototype.root = function () {
@@ -2047,14 +2056,21 @@ Calendar.prototype.renderMonth = function(container, month) {
     let date = dom.element(`<div class="date"></div>`);
     let day = (i - weekday + 1);
     if (i >= weekday) {
-      date.innerHTML = day;
+      let datespan = dom.element(`<div></div>`);
+      datespan.innerText = day;
+      date.appendChild(datespan);
     }
     let dateVal = month.format('YYYY-MM-') + (day < 10 ? ('0' + day) : day);
     if (dateVal == this.today.format('YYYY-MM-DD')) {
       date.classList.add('today');
     }
+    
     date.setAttribute('data-calendar-date', dateVal);
     row.appendChild(date);
+    date.onclick = ev => {
+      this.doSelectDate(ev);
+    };
+
     if (i % 7 == 6) {
       container.appendChild(row);
       row = null;
@@ -2104,6 +2120,14 @@ Calendar.prototype.render = function(containerId, params) {
   container.appendChild(this.root);
 };
 
+Calendar.prototype.doSelectDate = function (ev) {
+  this.root.querySelectorAll('div.selected').forEach((elm, idx) => {
+    elm.classList.remove('selected');
+  });
+  let div = dom.ancestor(ev.target, 'div', 'date');
+  div.classList.add('selected');
+};
+
 /*!
 ** @param opt
 **        配置项，包括以下选项：
@@ -2121,9 +2145,10 @@ CascadePicker.prototype.root = function () {
       <div class="popup-mask"></div>
       <div class="popup-bottom district-picker">
         <div class="popup-title">
-          <button class="cancel">取消</button>
+          <button class="clear">清除</button>
           <span class="value"></span>
           <span class="unit">{{unit}}</span>
+          <button class="cancel">取消</button>
           <button class="confirm">确认</button>
         </div>
         <div>
@@ -2143,6 +2168,7 @@ CascadePicker.prototype.root = function () {
   let mask = dom.find('.popup-mask', ret);
   let confirm = dom.find('.confirm', ret);
   let cancel = dom.find('.cancel', ret);
+  let clear = dom.find('.clear', ret);
 
   let onSelectionClicked = ev => {
     let div = dom.ancestor(ev.target, 'div');
@@ -2187,6 +2213,11 @@ CascadePicker.prototype.root = function () {
   });
 
   dom.bind(cancel, 'click', ev => {
+    this.close();
+  });
+
+  dom.bind(clear, 'click', ev => {
+    this.success([]);
     this.close();
   });
 
@@ -2282,9 +2313,10 @@ DistrictPicker.prototype.root = function () {
       <div class="popup-mask"></div>
       <div class="popup-bottom district-picker">
         <div class="popup-title">
-          <button class="cancel">取消</button>
+          <button class="clear">清除</button>
           <span class="value"></span>
           <span class="unit">{{unit}}</span>
+          <button class="cancel">取消</button>
           <button class="confirm">确认</button>
         </div>
         <div class="bottom-dialog-body">
@@ -2323,6 +2355,7 @@ DistrictPicker.prototype.root = function () {
   let mask = dom.find('.popup-mask', ret);
   let confirm = dom.find('.confirm', ret);
   let cancel = dom.find('.cancel', ret);
+  let clear = dom.find('.clear', ret);
   let value = dom.find('.value', ret);
 
   dom.bind(mask, 'click', ev => {
@@ -2330,6 +2363,11 @@ DistrictPicker.prototype.root = function () {
   });
 
   dom.bind(cancel, 'click', ev => {
+    this.close();
+  });
+
+  dom.bind(clear, 'click', ev => {
+    this.success({});
     this.close();
   });
 
@@ -2478,7 +2516,241 @@ DistrictPicker.prototype.close = function() {
   }, 300);
 };
 
-function EditableForm(opts) {
+/*!
+** @param opt
+**        配置项，包括以下选项：
+**        unit：单位
+*/
+function Numpad(opt) {
+  this.unit = opt.unit || '';
+  this.regex = opt.regex || /.*/;
+  this.success = opt.success || function (val) {};
+  this.type = opt.type || 'decimal';
+}
+
+Numpad.prototype.root = function () {
+  let ret = dom.templatize(`
+    <div class="popup-container">
+      <div class="popup-mask"></div>
+      <div class="popup-bottom numpad in">
+        <div class="popup-title">
+          <button class="clear">清除</button>
+          <span class="value"></span>
+          <span class="unit">{{unit}}</span>
+          <button class="cancel">取消</button>
+          <button class="confirm">确认</button>
+        </div>
+        <div class="gx-d-flex gx-w-full" style="flex-wrap: wrap!important;">
+          <div class="gx-24-08" style="line-height: 48px;">
+            <button class="number">1</button>
+          </div>
+          <div class="gx-24-08" style="line-height: 48px;">
+            <button class="number">2</button>
+          </div>
+          <div class="gx-24-08" style="line-height: 48px;">
+            <button class="number">3</button>
+          </div>
+          <div class="gx-24-08" style="line-height: 48px;">
+            <button class="number">4</button>
+          </div>
+          <div class="gx-24-08" style="line-height: 48px;">
+            <button class="number">5</button>
+          </div>
+          <div class="gx-24-08" style="line-height: 48px;">
+            <button class="number">6</button>
+          </div>
+          <div class="gx-24-08" style="line-height: 48px;">
+            <button class="number">7</button>
+          </div>
+          <div class="gx-24-08" style="line-height: 48px;">
+            <button class="number">8</button>
+          </div>
+          <div class="gx-24-08" style="line-height: 48px;">
+            <button class="number">9</button>
+          </div>
+          <div class="gx-24-08" style="line-height: 48px;">
+            <button widget-id="buttonSpecial" class="number">.</button>
+          </div>
+          <div class="gx-24-08" style="line-height: 48px;">
+            <button class="number">0</button>
+          </div>
+          <div class="gx-24-08" style="line-height: 48px; font-size: 24px;">
+            <button class="number">
+              <i class="fas fa-backspace" style="font-size: 20px;"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `, this);
+  this.bottom = dom.find('.popup-bottom', ret);
+  // this.audio = new Audio('img/keypressed.wav');
+  let mask = dom.find('.popup-mask', ret);
+  let confirm = dom.find('.confirm', ret);
+  let cancel = dom.find('.cancel', ret);
+  let clear = dom.find('.clear', ret);
+  let value = dom.find('.value', ret);
+  let special = dom.find('[widget-id=buttonSpecial]', ret);
+
+  if (this.type == 'id') {
+    special.innerText = 'X';
+    this.regex = /^.{0,18}$/;
+  } else if (this.type == 'mobile') {
+    special.remove();
+    this.regex = /^.{0,11}$/;
+  }
+
+  let numbers = ret.querySelectorAll('.number');
+  for (let i = 0; i < numbers.length; i++) {
+    let num = numbers[i];
+    dom.bind(num, 'click', ev => {
+      let str = value.innerText;
+      let text = ev.currentTarget.innerText;
+      if (text == '') {
+        if (str === '') return;
+        str = str.substr(0, str.length - 1);
+      } else {
+        if (this.regex.test(str + text)) {
+          str += text;
+        }
+      }
+      value.innerText = str;
+    });
+    // dom.bind(num, 'touchstart', ev => {
+    //   this.audio.src= 'img/keypressed.wav';
+    //   this.audio.play();
+    // });
+    // dom.bind(num, 'touchend', ev => {
+    //   // this.audio.pause();
+    // });
+  }
+
+  dom.bind(mask, 'click', ev => {
+    ev.stopPropagation();
+    ev.preventDefault();
+    this.close();
+  });
+
+  dom.bind(clear, 'click', ev => {
+    this.success('');
+    this.close();
+  });
+
+  dom.bind(cancel, 'click', ev => {
+    this.close();
+  });
+
+  dom.bind(confirm, 'click', ev => {
+    this.success(value.innerText);
+    this.close();
+  });
+  return ret;
+};
+
+Numpad.prototype.show = function(container) {
+  container.appendChild(this.root());
+};
+
+Numpad.prototype.close = function() {
+  this.bottom.classList.remove('in');
+  this.bottom.classList.add('out');
+  setTimeout(() => {
+    this.bottom.parentElement.remove();
+  }, 300);
+};
+
+/*!
+** @param opt
+**        配置项，包括以下选项：
+**        unit：单位
+*/
+function PopupRuler(opt) {
+  this.unit = opt.unit || '';
+  this.regex = opt.regex || /.*/;
+  this.success = opt.success || function (val) {};
+  this.type = opt.type || 'decimal';
+  this.value = opt.value || 0;
+  this.range = opt.range;
+}
+
+PopupRuler.prototype.root = function () {
+  let ret = dom.templatize(`
+    <div class="popup-container">
+      <div class="popup-mask"></div>
+      <div class="popup-bottom in">
+        <div class="popup-title">
+          <button class="clear">清除</button>
+          <span class="value"></span>
+          <span class="unit">{{unit}}</span>
+          <button class="cancel">取消</button>
+          <button class="confirm">确认</button>
+        </div>
+        <div class="popup-content" style="height: 200px; width: 100%;"></div>
+      </div>
+    </div>
+  `, this);
+
+  this.bottom = dom.find('.popup-bottom', ret);
+  let mask = dom.find('.popup-mask', ret);
+  let confirm = dom.find('.confirm', ret);
+  let cancel = dom.find('.cancel', ret);
+  let clear = dom.find('.clear', ret);
+  let value = dom.find('.value', ret);
+
+  dom.bind(mask, 'click', ev => {
+    ev.stopPropagation();
+    ev.preventDefault();
+    this.close();
+  });
+
+  dom.bind(clear, 'click', ev => {
+    this.success('');
+    this.close();
+  });
+
+  dom.bind(cancel, 'click', ev => {
+    this.close();
+  });
+
+  dom.bind(confirm, 'click', ev => {
+    this.success(value.innerText);
+    this.close();
+  });
+
+  return ret;
+};
+
+PopupRuler.prototype.show = function(container) {
+  let root = this.root();
+  container.appendChild(root);
+
+  let content = dom.find('.popup-content', root);
+  let value = dom.find('.value', root);
+  value.innerText = this.value || this.range[0];
+  ruler.initPlugin({
+    el: content, //容器id
+    startValue: this.value || this.range[0],
+    maxScale: this.range[1], //最大刻度
+    region: [this.range[0], this.range[1]], //选择刻度的区间范围
+    background: "#fff",
+    color: "#E0E0E0", //刻度线和字体的颜色
+    markColor: "#73B17B", //中心刻度标记颜色
+    isConstant: true, //是否不断地获取值
+    success: res => {
+      value.innerText = res;
+    }
+  });
+};
+
+PopupRuler.prototype.close = function() {
+  this.bottom.classList.remove('in');
+  this.bottom.classList.add('out');
+  setTimeout(() => {
+    this.bottom.parentElement.remove();
+  }, 300);
+};
+
+function TwoColumnForm(opts) {
   let self = this;
   this.fields = opts.fields;
   this.readonly = opts.readonly || false;
@@ -2486,13 +2758,13 @@ function EditableForm(opts) {
   this.readOpt = opts.read;
 }
 
-EditableForm.prototype.render = async function (container) {
+TwoColumnForm.prototype.render = async function (container) {
   container.innerHTML = '';
   let root = await this.root();
   container.appendChild(root);
 };
 
-EditableForm.prototype.root = async function() {
+TwoColumnForm.prototype.root = async function() {
   let ret = dom.element(`
     <div class="gx-form"></div>
   `);
@@ -2587,7 +2859,7 @@ EditableForm.prototype.root = async function() {
   return ret;
 };
 
-EditableForm.prototype.buildDate = function (field) {
+TwoColumnForm.prototype.buildDate = function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
       <label class="gx-form-label gx-24-06">{{title}}</label>
@@ -2607,6 +2879,11 @@ EditableForm.prototype.buildDate = function (field) {
       title: field.title,
       confirm: date => {
         let row = dom.ancestor(ev.target, 'div', 'gx-24-18');
+        if (!date || date == '') {
+          dom.find('input[type=text]', row).value = '';
+          dom.find('input[type=hidden]', row).value = '';
+          return;
+        }
         dom.find('input[type=text]', row).value = moment(date).format('YYYY年MM月DD日');
         dom.find('input[type=hidden]', row).value = moment(date).format('YYYY-MM-DD HH:mm:ss');
       },
@@ -2616,7 +2893,7 @@ EditableForm.prototype.buildDate = function (field) {
   return ret;
 };
 
-EditableForm.prototype.buildTime = function (field) {
+TwoColumnForm.prototype.buildTime = function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
       <label class="gx-form-label gx-24-06">{{title}}</label>
@@ -2636,6 +2913,11 @@ EditableForm.prototype.buildTime = function (field) {
       title: field.title,
       confirm: date => {
         let row = dom.ancestor(ev.target, 'div', 'gx-24-18');
+        if (!date || date == '') {
+          dom.find('input[type=text]', row).value = '';
+          dom.find('input[type=hidden]', row).value = '';
+          return;
+        }
         dom.find('input[type=text]', row).value = moment(date).format('YYYY年MM月DD日');
         dom.find('input[type=hidden]', row).value = moment(date).format('YYYY-MM-DD HH:mm:ss');
       },
@@ -2645,7 +2927,7 @@ EditableForm.prototype.buildTime = function (field) {
   return ret;
 };
 
-EditableForm.prototype.buildSwitch = function (field) {
+TwoColumnForm.prototype.buildSwitch = function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
       <label class="gx-form-label gx-24-06">{{title}}</label>
@@ -2660,7 +2942,7 @@ EditableForm.prototype.buildSwitch = function (field) {
   return ret;
 };
 
-EditableForm.prototype.buildRadio = async function (field) {
+TwoColumnForm.prototype.buildRadio = async function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
       <label class="gx-form-label gx-24-06">{{title}}</label>
@@ -2686,7 +2968,7 @@ EditableForm.prototype.buildRadio = async function (field) {
   return ret;
 };
 
-EditableForm.prototype.buildCheck = async function (field) {
+TwoColumnForm.prototype.buildCheck = async function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
       <label class="gx-form-label gx-24-06">{{title}}</label>
@@ -2712,7 +2994,7 @@ EditableForm.prototype.buildCheck = async function (field) {
   return ret;
 };
 
-EditableForm.prototype.buildSelect = async function (field) {
+TwoColumnForm.prototype.buildSelect = async function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
       <label class="gx-form-label gx-24-06">{{title}}</label>
@@ -2749,6 +3031,11 @@ EditableForm.prototype.buildSelect = async function (field) {
       values: values,
       confirm: data => {
         let row = dom.ancestor(ev.target, 'div', 'gx-24-18');
+        if (!data || data == '') {
+          dom.find('input[type=text]', row).value = '';
+          dom.find('input[type=hidden]', row).value = '';
+          return;
+        }
         dom.find('input[type=text]', row).value = data.text;
         dom.find('input[type=hidden]', row).value = data.value;
       },
@@ -2758,7 +3045,7 @@ EditableForm.prototype.buildSelect = async function (field) {
   return ret;
 };
 
-EditableForm.prototype.buildMobile = function (field) {
+TwoColumnForm.prototype.buildMobile = function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
       <label class="gx-form-label gx-24-06">{{title}}</label>
@@ -2783,7 +3070,7 @@ EditableForm.prototype.buildMobile = function (field) {
   return ret;
 };
 
-EditableForm.prototype.buildId = function (field) {
+TwoColumnForm.prototype.buildId = function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
       <label class="gx-form-label gx-24-06">{{title}}</label>
@@ -2808,7 +3095,7 @@ EditableForm.prototype.buildId = function (field) {
   return ret;
 };
 
-EditableForm.prototype.buildDistrict = function (field) {
+TwoColumnForm.prototype.buildDistrict = function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
       <label class="gx-form-label gx-24-06">{{title}}</label>
@@ -2848,7 +3135,7 @@ EditableForm.prototype.buildDistrict = function (field) {
   return ret;
 };
 
-EditableForm.prototype.buildRuler = function (field) {
+TwoColumnForm.prototype.buildRuler = function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
       <label class="gx-form-label gx-24-06">{{title}}</label>
@@ -2866,10 +3153,14 @@ EditableForm.prototype.buildRuler = function (field) {
     input.setAttribute('placeholder', '');
     return ret;
   }
+  if (field.value) {
+    input.value = field.value;
+  }
   dom.bind(ret, 'click', ev => {
     new PopupRuler({
-      range: field.range || [30, 150],
+      range: field.range,
       height: 70,
+      value: input.value,
       success: (val) => {
         input.value = val;
       }
@@ -2878,7 +3169,7 @@ EditableForm.prototype.buildRuler = function (field) {
   return ret;
 };
 
-EditableForm.prototype.buildImages = function (field) {
+TwoColumnForm.prototype.buildImages = function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group row pb-2">
       <label class="gx-form-label gx-24-06">{{title}}</label>
@@ -2891,224 +3182,4 @@ EditableForm.prototype.buildImages = function (field) {
     </div>
   `, field);
   return ret;
-};
-
-/*!
-** @param opt
-**        配置项，包括以下选项：
-**        unit：单位
-*/
-function Numpad(opt) {
-  this.unit = opt.unit || '';
-  this.regex = opt.regex || /.*/;
-  this.success = opt.success || function (val) {};
-  this.type = opt.type || 'decimal';
-}
-
-Numpad.prototype.root = function () {
-  let ret = dom.templatize(`
-    <div class="popup-container">
-      <div class="popup-mask"></div>
-      <div class="popup-bottom numpad in">
-        <div class="popup-title">
-          <button class="cancel">取消</button>
-          <span class="value"></span>
-          <span class="unit">{{unit}}</span>
-          <button class="confirm">确认</button>
-        </div>
-        <div class="gx-d-flex gx-w-full" style="flex-wrap: wrap!important;">
-          <div class="gx-24-08" style="line-height: 48px;">
-            <button class="number">1</button>
-          </div>
-          <div class="gx-24-08" style="line-height: 48px;">
-            <button class="number">2</button>
-          </div>
-          <div class="gx-24-08" style="line-height: 48px;">
-            <button class="number">3</button>
-          </div>
-          <div class="gx-24-08" style="line-height: 48px;">
-            <button class="number">4</button>
-          </div>
-          <div class="gx-24-08" style="line-height: 48px;">
-            <button class="number">5</button>
-          </div>
-          <div class="gx-24-08" style="line-height: 48px;">
-            <button class="number">6</button>
-          </div>
-          <div class="gx-24-08" style="line-height: 48px;">
-            <button class="number">7</button>
-          </div>
-          <div class="gx-24-08" style="line-height: 48px;">
-            <button class="number">8</button>
-          </div>
-          <div class="gx-24-08" style="line-height: 48px;">
-            <button class="number">9</button>
-          </div>
-          <div class="gx-24-08" style="line-height: 48px;">
-            <button widget-id="buttonSpecial" class="number">.</button>
-          </div>
-          <div class="gx-24-08" style="line-height: 48px;">
-            <button class="number">0</button>
-          </div>
-          <div class="gx-24-08" style="line-height: 48px; font-size: 24px;">
-            <button class="number">
-              <i class="fas fa-backspace" style="font-size: 20px;"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  `, this);
-  this.bottom = dom.find('.popup-bottom', ret);
-  // this.audio = new Audio('img/keypressed.wav');
-  let mask = dom.find('.popup-mask', ret);
-  let confirm = dom.find('.confirm', ret);
-  let cancel = dom.find('.cancel', ret);
-  let value = dom.find('.value', ret);
-  let special = dom.find('[widget-id=buttonSpecial]', ret);
-
-  if (this.type == 'id') {
-    special.innerText = 'X';
-    this.regex = /^.{0,18}$/;
-  } else if (this.type == 'mobile') {
-    special.remove();
-    this.regex = /^.{0,11}$/;
-  }
-
-  let numbers = ret.querySelectorAll('.number');
-  for (let i = 0; i < numbers.length; i++) {
-    let num = numbers[i];
-    dom.bind(num, 'click', ev => {
-      let str = value.innerText;
-      let text = ev.currentTarget.innerText;
-      if (text == '') {
-        if (str === '') return;
-        str = str.substr(0, str.length - 1);
-      } else {
-        if (this.regex.test(str + text)) {
-          str += text;
-        }
-      }
-      value.innerText = str;
-    });
-    // dom.bind(num, 'touchstart', ev => {
-    //   this.audio.src= 'img/keypressed.wav';
-    //   this.audio.play();
-    // });
-    // dom.bind(num, 'touchend', ev => {
-    //   // this.audio.pause();
-    // });
-  }
-
-  dom.bind(mask, 'click', ev => {
-    ev.stopPropagation();
-    ev.preventDefault();
-    this.close();
-  });
-
-  dom.bind(cancel, 'click', ev => {
-    this.close();
-  });
-
-  dom.bind(confirm, 'click', ev => {
-    this.success(value.innerText);
-    this.close();
-  });
-  return ret;
-};
-
-Numpad.prototype.show = function(container) {
-  container.appendChild(this.root());
-};
-
-Numpad.prototype.close = function() {
-  this.bottom.classList.remove('in');
-  this.bottom.classList.add('out');
-  setTimeout(() => {
-    this.bottom.parentElement.remove();
-  }, 300);
-};
-
-/*!
-** @param opt
-**        配置项，包括以下选项：
-**        unit：单位
-*/
-function PopupRuler(opt) {
-  this.unit = opt.unit || '';
-  this.regex = opt.regex || /.*/;
-  this.success = opt.success || function (val) {};
-  this.type = opt.type || 'decimal';
-  this.value = opt.value;
-  this.range = opt.range;
-}
-
-PopupRuler.prototype.root = function () {
-  let ret = dom.templatize(`
-    <div class="popup-container">
-      <div class="popup-mask"></div>
-      <div class="popup-bottom in">
-        <div class="popup-title">
-          <button class="cancel">取消</button>
-          <span class="value"></span>
-          <span class="unit">{{unit}}</span>
-          <button class="confirm">确认</button>
-        </div>
-        <div class="popup-content" style="height: 200px; width: 100%;"></div>
-      </div>
-    </div>
-  `, this);
-
-  this.bottom = dom.find('.popup-bottom', ret);
-  let mask = dom.find('.popup-mask', ret);
-  let confirm = dom.find('.confirm', ret);
-  let cancel = dom.find('.cancel', ret);
-  let value = dom.find('.value', ret);
-
-  dom.bind(mask, 'click', ev => {
-    ev.stopPropagation();
-    ev.preventDefault();
-    this.close();
-  });
-
-  dom.bind(cancel, 'click', ev => {
-    this.close();
-  });
-
-  dom.bind(confirm, 'click', ev => {
-    this.success(value.innerText);
-    this.close();
-  });
-
-  return ret;
-};
-
-PopupRuler.prototype.show = function(container) {
-  let root = this.root();
-  container.appendChild(root);
-
-  let content = dom.find('.popup-content', root);
-  let value = dom.find('.value', root);
-  value.innerText = this.value;
-  ruler.initPlugin({
-    el: content, //容器id
-    startValue: this.value,
-    maxScale: this.range[1], //最大刻度
-    region: [this.range[0], this.range[1]], //选择刻度的区间范围
-    background: "#fff",
-    color: "#E0E0E0", //刻度线和字体的颜色
-    markColor: "#73B17B", //中心刻度标记颜色
-    isConstant: true, //是否不断地获取值
-    success: res => {
-      value.innerText = res;
-    }
-  });
-};
-
-PopupRuler.prototype.close = function() {
-  this.bottom.classList.remove('in');
-  this.bottom.classList.add('out');
-  setTimeout(() => {
-    this.bottom.parentElement.remove();
-  }, 300);
 };

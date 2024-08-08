@@ -12,7 +12,7 @@ function CascadePicker(opt) {
 
 CascadePicker.prototype.root = function () {
   let ret = dom.templatize(`
-    <div class="popup-container">
+    <div class="gx popup-container">
       <div class="popup-mask"></div>
       <div class="popup-bottom district-picker">
         <div class="popup-title">

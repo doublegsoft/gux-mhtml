@@ -49,6 +49,9 @@ var ruler = {
         if (initParams.region) {
             minSildeNum = Math.floor(initParams.region[0]);
             maxSildeNum = Math.floor(initParams.region[1]);
+            if (!params.startValue) {
+                initParams.startValue = initParams.region[0];
+            }
         }
 
         var count = initParams.startValue; //初始值
@@ -214,7 +217,7 @@ var ruler = {
                 return false;
             }
             _distanceX = distanceX;
-            count = lastX + distanceX;
+            count = lastX - distanceX;
 
             if (count >= initParams.maxScale || count <= 0) {
                 count = count >= initParams.maxScale ? initParams.maxScale : 0;

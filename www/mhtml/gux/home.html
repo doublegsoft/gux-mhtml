@@ -26,7 +26,7 @@
       </div>
       <span class="gx-fs-16 gx-mt-8">开心</span>
     </div>
-    <div class="gx-d-flex" style="flex: 1;text-align: center;flex-direction: column;">
+    <div widget-id="buttonCalm" class="gx-d-flex" style="flex: 1;text-align: center;flex-direction: column;">
       <div class="gx-d-flex gx-m-auto" style="width:69px;height:72px;background:#AEAFF7;border-radius:25px;">
         <img src="/img/demo/mental/calm.png" style="width:39px;height:39px;" class="gx-m-auto">
       </div>
@@ -50,11 +50,14 @@
     <div widget-id="widgetTabsNavigator"></div>
     <div widget-id="widgetTabsContent"></div>
   </div>
+  <div style="height: 800px;"></div>
 </div>
 <script>
 
 function PageHome() {
   this.page = document.getElementById('pageHome');
+  this.noNavigationBar = true;
+  this.noBottomNavigator = false;
 }
 
 PageHome.prototype.initialize = function() {
@@ -76,27 +79,32 @@ PageHome.prototype.initialize = function() {
       id: 'tab-a',
       title: '喝水',
       success: (opt) => {
-        console.log(opt);
+  
       },
     },{
       id: 'tab-b',
       title: '吃饭',
       success: (opt) => {
-        console.log(opt);
+
       },
     },{
       id: 'tab-c',
       title: '奶茶',
       success: (opt) => {
-        console.log(opt);
+
       },
     }]
   }).render();
 
   dom.bind(this.buttonHappy, 'click', ev => {
-    gux.navigateTo('/mhtml/gux/component/index.html', {
-      title: '组件展示',
-    });
+    gux.navigateTo('/mhtml/common/under-construction.html');
+  });
+
+  dom.bind(this.buttonCalm, 'click', ev => {
+    gux.popup({
+      content: dom.element('<div>您好</div>'),
+      height: 300,
+    })
   });
 };
 
@@ -105,9 +113,7 @@ PageHome.prototype.show = function() {
 };
 
 PageHome.prototype.pull2Refresh = function() {
-  pageIndex.switchTab('/mhtml/nowcare/home.html', {
-    noNavigationBar: true,
-  })
+  pageIndex.switchTab('/mhtml/gux/home.html', {})
 };
 
 pageHome = new PageHome();

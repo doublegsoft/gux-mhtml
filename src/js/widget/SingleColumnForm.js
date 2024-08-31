@@ -1,5 +1,5 @@
 
-function TwoColumnForm(opts) {
+function SingleColumnForm(opts) {
   let self = this;
   this.fields = opts.fields;
   this.readonly = opts.readonly || false;
@@ -7,13 +7,13 @@ function TwoColumnForm(opts) {
   this.readOpt = opts.read;
 }
 
-TwoColumnForm.prototype.render = async function (container) {
+SingleColumnForm.prototype.render = async function (container) {
   container.innerHTML = '';
   let root = await this.root();
   container.appendChild(root);
 };
 
-TwoColumnForm.prototype.root = async function() {
+SingleColumnForm.prototype.root = async function() {
   let ret = dom.element(`
     <div class="gx-form"></div>
   `);
@@ -51,8 +51,8 @@ TwoColumnForm.prototype.root = async function() {
     } else if (field.input === 'longtext') {
       el = dom.templatize(`
         <div class="gx-form-group gx-row">
-          <label class="gx-form-label gx-24-06">{{title}}</label>
-          <div class="gx-24-18">
+          <label class="gx-form-label gx-24-24">{{title}}</label>
+          <div class="gx-24-24">
             <textarea type="text" name="{{name}}" class="gx-form-control" placeholder="请填写"></textarea>
           </div>
         </div>
@@ -64,8 +64,8 @@ TwoColumnForm.prototype.root = async function() {
     } else if (field.input === 'icon') {
       el = dom.templatize(`
         <div class="gx-form-group gx-row">
-          <label class="gx-form-label gx-24-06">{{title}}</label>
-          <div class="gx-24-18"></div>
+          <label class="gx-form-label gx-24-24">{{title}}</label>
+          <div class="gx-24-24"></div>
         </div>
       `, field);
       let input = field.create(field.value);
@@ -73,8 +73,8 @@ TwoColumnForm.prototype.root = async function() {
     } else if (field.input === 'icons') {
       el = dom.templatize(`
         <div class="gx-form-group gx-row">
-          <label class="gx-form-label gx-24-06">{{title}}</label>
-          <div class="gx-24-18"></div>
+          <label class="gx-form-label gx-24-24">{{title}}</label>
+          <div class="gx-24-24"></div>
         </div>
       `, field);
       let input = field.create(field.value);
@@ -82,8 +82,8 @@ TwoColumnForm.prototype.root = async function() {
     } else if (field.input === 'rating') {
       el = dom.templatize(`
         <div class="gx-form-group gx-row">
-          <label class="gx-form-label gx-24-06">{{title}}</label>
-          <div class="gx-24-18"></div>
+          <label class="gx-form-label gx-24-24">{{title}}</label>
+          <div class="gx-24-24"></div>
         </div>
       `, field);
       let input = field.create(field.value);
@@ -91,8 +91,8 @@ TwoColumnForm.prototype.root = async function() {
     } else {
       el = dom.templatize(`
         <div class="gx-form-group gx-row">
-          <label class="gx-form-label gx-24-06">{{title}}</label>
-          <div class="gx-24-18 d-flex">
+          <label class="gx-form-label gx-24-24">{{title}}</label>
+          <div class="gx-24-24 d-flex">
             <input type="text" name="{{name}}" class="gx-form-control" placeholder="请填写">
             {{#if unit}}
             <span class="ml-auto text-muted small mr-2 mt-2">{{unit}}</span>
@@ -110,11 +110,11 @@ TwoColumnForm.prototype.root = async function() {
   return ret;
 };
 
-TwoColumnForm.prototype.buildDate = function (field) {
+SingleColumnForm.prototype.buildDate = function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
-      <label class="gx-form-label gx-24-06">{{title}}</label>
-      <div class="gx-24-18 d-flex">
+      <label class="gx-form-label gx-24-24">{{title}}</label>
+      <div class="gx-24-24 d-flex">
         <input type="text" class="gx-form-control" readonly placeholder="请选择...">
         <input type="hidden" name="{{name}}">
         <span class="gx-ml-auto gx-pos-relative gx-fs-18 fas fa-calendar" style="top: 5px; left: -2px;"></span>
@@ -129,7 +129,7 @@ TwoColumnForm.prototype.buildDate = function (field) {
     let rd = new Rolldate({
       title: field.title,
       confirm: date => {
-        let row = dom.ancestor(ev.target, 'div', 'gx-24-18');
+        let row = dom.ancestor(ev.target, 'div', 'gx-24-24');
         if (!date || date == '') {
           dom.find('input[type=text]', row).value = '';
           dom.find('input[type=hidden]', row).value = '';
@@ -144,11 +144,11 @@ TwoColumnForm.prototype.buildDate = function (field) {
   return ret;
 };
 
-TwoColumnForm.prototype.buildTime = function (field) {
+SingleColumnForm.prototype.buildTime = function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
-      <label class="gx-form-label gx-24-06">{{title}}</label>
-      <div class="gx-24-18 d-flex">
+      <label class="gx-form-label gx-24-24">{{title}}</label>
+      <div class="gx-24-24 d-flex">
         <input type="text" class="gx-form-control" readonly placeholder="请选择...">
         <input type="hidden" name="{{name}}">
         <span class="ml-auto material-icons font-16 position-relative" style="top: 5px; left: -2px;">schedule</span>
@@ -163,7 +163,7 @@ TwoColumnForm.prototype.buildTime = function (field) {
     let rd = new Rolldate({
       title: field.title,
       confirm: date => {
-        let row = dom.ancestor(ev.target, 'div', 'gx-24-18');
+        let row = dom.ancestor(ev.target, 'div', 'gx-24-24');
         if (!date || date == '') {
           dom.find('input[type=text]', row).value = '';
           dom.find('input[type=hidden]', row).value = '';
@@ -178,11 +178,11 @@ TwoColumnForm.prototype.buildTime = function (field) {
   return ret;
 };
 
-TwoColumnForm.prototype.buildSwitch = function (field) {
+SingleColumnForm.prototype.buildSwitch = function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
-      <label class="gx-form-label gx-24-06">{{title}}</label>
-      <div class="gx-24-18 d-flex pr-3 pl-3">
+      <label class="gx-form-label gx-24-24">{{title}}</label>
+      <div class="gx-24-24 d-flex pr-3 pl-3">
         <label class="c-switch c-switch-label c-switch-pill c-switch-info mt-1" style="min-width: 48px;">
         <input class="c-switch-input" value="T" name="{{name}}" type="checkbox">
         <span class="c-switch-slider" data-checked="是" data-unchecked="否"></span>
@@ -193,11 +193,11 @@ TwoColumnForm.prototype.buildSwitch = function (field) {
   return ret;
 };
 
-TwoColumnForm.prototype.buildRadio = async function (field) {
+SingleColumnForm.prototype.buildRadio = async function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
-      <label class="gx-form-label gx-24-06">{{title}}</label>
-      <div class="gx-24-18 input-group pr-3 pl-3"></div>
+      <label class="gx-form-label gx-24-24">{{title}}</label>
+      <div class="gx-24-24 input-group pr-3 pl-3"></div>
     </div>
   `, field);
 
@@ -219,11 +219,11 @@ TwoColumnForm.prototype.buildRadio = async function (field) {
   return ret;
 };
 
-TwoColumnForm.prototype.buildCheck = async function (field) {
+SingleColumnForm.prototype.buildCheck = async function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
-      <label class="gx-form-label gx-24-06">{{title}}</label>
-      <div class="gx-24-18 input-group pr-3 pl-3"></div>
+      <label class="gx-form-label gx-24-24">{{title}}</label>
+      <div class="gx-24-24 input-group pr-3 pl-3"></div>
     </div>
   `, field);
 
@@ -245,11 +245,11 @@ TwoColumnForm.prototype.buildCheck = async function (field) {
   return ret;
 };
 
-TwoColumnForm.prototype.buildSelect = async function (field) {
+SingleColumnForm.prototype.buildSelect = async function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
-      <label class="gx-form-label gx-24-06">{{title}}</label>
-      <div class="gx-24-18 d-flex">
+      <label class="gx-form-label gx-24-24">{{title}}</label>
+      <div class="gx-24-24 d-flex">
         <input type="text" class="gx-form-control" readonly placeholder="请选择...">
         <input type="hidden" name="{{name}}">
         <span class="gx-ml-auto gx-pos-relative gx-fs-16 fas fa-chevron-down" style="top: 8px; left: -2px;"></span>
@@ -281,7 +281,7 @@ TwoColumnForm.prototype.buildSelect = async function (field) {
       format: 'oo',
       values: values,
       confirm: data => {
-        let row = dom.ancestor(ev.target, 'div', 'gx-24-18');
+        let row = dom.ancestor(ev.target, 'div', 'gx-24-24');
         if (!data || data == '') {
           dom.find('input[type=text]', row).value = '';
           dom.find('input[type=hidden]', row).value = '';
@@ -296,11 +296,11 @@ TwoColumnForm.prototype.buildSelect = async function (field) {
   return ret;
 };
 
-TwoColumnForm.prototype.buildMobile = function (field) {
+SingleColumnForm.prototype.buildMobile = function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
-      <label class="gx-form-label gx-24-06">{{title}}</label>
-      <div class="gx-24-18 d-flex">
+      <label class="gx-form-label gx-24-24">{{title}}</label>
+      <div class="gx-24-24 d-flex">
         <input type="text" name="{{name}}" class="gx-form-control" readonly placeholder="请输入...">
       </div>
     </div>
@@ -321,11 +321,11 @@ TwoColumnForm.prototype.buildMobile = function (field) {
   return ret;
 };
 
-TwoColumnForm.prototype.buildId = function (field) {
+SingleColumnForm.prototype.buildId = function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
-      <label class="gx-form-label gx-24-06">{{title}}</label>
-      <div class="gx-24-18 d-flex">
+      <label class="gx-form-label gx-24-24">{{title}}</label>
+      <div class="gx-24-24 d-flex">
         <input type="text" name="{{name}}" class="gx-form-control" readonly placeholder="请输入...">
       </div>
     </div>
@@ -346,11 +346,11 @@ TwoColumnForm.prototype.buildId = function (field) {
   return ret;
 };
 
-TwoColumnForm.prototype.buildDistrict = function (field) {
+SingleColumnForm.prototype.buildDistrict = function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
-      <label class="gx-form-label gx-24-06">{{title}}</label>
-      <div class="gx-24-18 d-flex">
+      <label class="gx-form-label gx-24-24">{{title}}</label>
+      <div class="gx-24-24 d-flex">
         <input type="text" name="{{name}}" class="gx-form-control" readonly placeholder="请选择...">
         <span class="gx-ml-auto gx-pos-relative gx-fs-16 fas fa-chevron-down" style="top: 8px;left: -2px;"></span>
       </div>
@@ -386,11 +386,11 @@ TwoColumnForm.prototype.buildDistrict = function (field) {
   return ret;
 };
 
-TwoColumnForm.prototype.buildRuler = function (field) {
+SingleColumnForm.prototype.buildRuler = function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group gx-row">
-      <label class="gx-form-label gx-24-06">{{title}}</label>
-      <div class="gx-24-18 d-flex">
+      <label class="gx-form-label gx-24-24">{{title}}</label>
+      <div class="gx-24-24 d-flex">
         <input type="text" name="{{name}}" class="gx-form-control" readonly placeholder="请选择...">
         {{#if unit}}
         <span class="gx-ml-auto gx-pos-relative gx-mr-8" style="top:6px;">{{unit}}</span>
@@ -420,12 +420,12 @@ TwoColumnForm.prototype.buildRuler = function (field) {
   return ret;
 };
 
-TwoColumnForm.prototype.buildSegment = function (field) {
+SingleColumnForm.prototype.buildSegment = function (field) {
   let opt = field.options || {};
   let ret = dom.templatize(`
     <div class="gx-form-group row pb-2">
-      <label class="gx-form-label gx-24-06">{{title}}</label>
-      <div class="segment-group gx-24-18">
+      <label class="gx-form-label gx-24-24">{{title}}</label>
+      <div class="segment-group gx-24-24">
         {{#values}}
         <div class="segment" data-model-value="{{value}}">{{text}}</div>
         {{/values}}
@@ -439,6 +439,7 @@ TwoColumnForm.prototype.buildSegment = function (field) {
   for (let seg of segments) {
     dom.bind(seg, 'click', ev => {
       let seg = dom.ancestor(ev.target, 'div', 'segment');
+
       for (let child of seg.parentElement.children) {
         child.classList.remove('active');
       }
@@ -448,11 +449,11 @@ TwoColumnForm.prototype.buildSegment = function (field) {
   return ret;
 };
 
-TwoColumnForm.prototype.buildImages = function (field) {
+SingleColumnForm.prototype.buildImages = function (field) {
   let ret = dom.templatize(`
     <div class="gx-form-group row pb-2">
-      <label class="gx-form-label gx-24-06">{{title}}</label>
-      <div class="gx-24-18 d-flex">
+      <label class="gx-form-label gx-24-24">{{title}}</label>
+      <div class="gx-24-24 d-flex">
         <div class="d-flex align-items-center justify-content-center" 
              style="height: 80px; width: 80px; border: 1px solid #eee;">
           <i class="gx-i gx-i-plus" style="color: #bbb;"></i>

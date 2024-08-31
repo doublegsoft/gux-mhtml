@@ -13,24 +13,16 @@
 <link rel="stylesheet" href="/css/gux-calendar.css">
 <link rel="stylesheet" href="/css/gux-numpad.css">
 <link rel="stylesheet" href="/css/gux-popup.css">
+<link rel="stylesheet" href="/css/gux-page.css">
 <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body class="app header-fixed sidebar-fixed aside-menu-fixed sidebar-lg-show" style="overflow-y: hidden">  
-  <header>
-    <div id="navigation-bar" class="gx-bg-primary gx-d-flex" style="height:96px;">
-      <div style="width: 100px;"></div>
-      <div class="gx-d-flex gx-py-8" style="flex: 1;align-items: end;justify-content: center;">
-        <div id="navigation-bar-title" class="gx-text-inverse gx-fs-22"></div>
-      </div>
-      <div style="width: 100px;"></div>
-    </div>
-  </header>
   <div id="refresh-indicator">
-    <div>Pull to refresh</div>
+    <div>下拉刷新页面</div>
   </div>  
-  <main id="pull-to-refresh" class="main" style="transform:translateY(-1px);">
-    <div id="container" class="overflow-y: auto;"></div>
+  <main id="pull-to-refresh" class="main" style="transform:translateY(-1px);overflow:hidden;">
+    <div id="container" style="overflow:hidden;"></div>
   </main>
   <footer>
     <div widget-id="bottomNavigator" class="bottom-navigator">
@@ -40,7 +32,7 @@
           <span>首页</span>
         </label>
         <label widget-id="buttonComponent" style="flex: 0 0 25%;">
-          <i class="gx-i gx-i-comment gx-fs-36" style="left: -1px;"></i>
+          <i class="gx-i gx-i-comment gx-fs-36 gx-fb" style="left: -1px;"></i>
           <span>组件</span>
         </label>
         <label widget-id="buttonApplication" style="flex: 0 0 25%;">
@@ -78,6 +70,7 @@
 <script src="/js/widget/PopupRuler.js"></script>
 <script src="/js/widget/Numpad.js"></script>
 <script src="/js/widget/Tabs.js"></script>
+<script src="/js/widget/ListView.js"></script>
 
 <script>
 const REFRESH_INDICATOR_HEIGHT = 240;
@@ -92,7 +85,7 @@ function PageIndex() {
 
 PageIndex.prototype.initialize = async function (params) {
   let main = document.querySelector('main');
-  let header = document.querySelector('header');
+  let container = document.getElementById('container');
   let footer = document.querySelector('footer');
 
   this.bottomNavigator = document.querySelector('[widget-id=bottomNavigator]');
@@ -111,7 +104,7 @@ PageIndex.prototype.initialize = async function (params) {
   // 初始化环境
   // header.style.width = window.clientWidth + 'px';
   // footer.style.width = window.clientWidth + 'px';
-  main.style.height = (window.innerHeight - 0) + 'px';
+  container.style.height = (window.innerHeight - 0) + 'px';
 
   // 底部导航
   let navbar = document.querySelector(".bottom-bar")
@@ -156,6 +149,7 @@ PageIndex.prototype.initialize = async function (params) {
     this.buttonComponent.classList.add('active');
     this.switchTab('/mhtml/gux/component.html', {
       title: '组件展示',
+      icon: '<i class="gx-i gx-i-comment gx-pos-relative gx-text-inverse gx-fs-28 gx-fb" style="bottom: -50%;left: 18px;"></i>',
       noPull2Refresh: true,
     });
   });
@@ -217,7 +211,7 @@ PageIndex.prototype.installPull2Refresh = function (success) {
       e.preventDefault();
       if (deltaY > REFRESH_INDICATOR_HEIGHT) {
         this.refreshIndicator.style.display = 'flex';
-        this.refreshIndicator.children[0].textContent = 'Release to refresh';
+        this.refreshIndicator.children[0].textContent = '释放手指立刻刷新';
         this.refreshIndicator.style.height = (REFRESH_INDICATOR_HEIGHT / 2) + 'px';
       } else {
         if (deltaY <= REFRESH_INDICATOR_HEIGHT / 2) {
@@ -234,7 +228,7 @@ PageIndex.prototype.installPull2Refresh = function (success) {
     const deltaY = currentY - startY;
 
     if (deltaY > REFRESH_INDICATOR_HEIGHT) {
-      this.refreshIndicator.children[0].textContent = 'Refreshing...';
+      this.refreshIndicator.children[0].textContent = '正在加载数据...';
       // Simulate a refresh action
       setTimeout(() => {
         this.refreshContainer.style.transform = 'translateY(-1px)';
@@ -257,16 +251,12 @@ PageIndex.prototype.uninstallPull2Refresh = function (success) {
   this.refreshContainer.ontouchend = e => {};
 };
 
-PageIndex.prototype.showNavigationBar = async function (params) {
-  this.navigationBar.style.display = '';
+PageIndex.prototype.showBottomNavigator = async function (params) {
+  this.bottomNavigator.style.display = '';
 };
 
-PageIndex.prototype.hideNavigationBar = async function (params) {
-  this.navigationBar.style.display = 'none';
-};
-
-PageIndex.prototype.setTitle = function (title) {
-  this.navigationBarTitle.innerText = title || '';
+PageIndex.prototype.hideBottomNavigator = async function (params) {
+  this.bottomNavigator.style.display = 'none';
 };
 
 PageIndex.prototype.switchTab = function (url, opt) {
@@ -279,9 +269,9 @@ PageIndex.prototype.show = async function (params) {
 };
 
 PageIndex.prototype.getViewHeight = function (params) {
-  let rectTop = this.navigationBar.getBoundingClientRect();
+  // let rectTop = this.navigationBar.getBoundingClientRect();
   let rectBot = this.bottomNavigator.getBoundingClientRect();
-  return window.innerHeight - rectTop.height - rectBot.height - 24;
+  return window.innerHeight - 96 - rectBot.height - 24;
 };
 
 pageIndex = new PageIndex();

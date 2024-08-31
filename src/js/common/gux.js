@@ -21,20 +21,39 @@ if (typeof Handlebars !== "undefined") {
 
 if (typeof gux === 'undefined') gux = {};
 
+
+
 gux = {
   routedPages: [],
   presentPageObj: null,
+  safeTop: 44,
+  navigationBarHeight: 44,
 };
 
-gux.navigateTo = async function (url, opt, clear) {
+gux.switchTab = function(url, opt) {
   clearTimeout(gux.delayToLoad);
+  let clear = opt.clear;
   if (typeof clear === "undefined") clear = false;
-  let main = document.querySelector('main');
+  let container = document.getElementById('container');
 
   if (gux.presentPageObj) {
-    gux.presentPageObj.page.classList.remove('in');
-    gux.presentPageObj.page.classList.add('out');
+    gux.presentPageObj.page.parentElement.classList.remove('in');
+    gux.presentPageObj.page.parentElement.classList.add('out');
+    gux.presentPageObj.page.parentElement.style.display = 'none';
   }
+
+  let existingPage = dom.find('[gux-page-url="' + url + '"]', container);
+
+  if (existingPage) {
+    gux.presentPageObj = window[existingPage.getAttribute('gux-page-id')];
+    gux.presentPageObj.page.parentElement.style.display = '';
+    gux.presentPageObj.page.parentElement.classList.remove('out');
+    gux.presentPageObj.page.parentElement.classList.add('in');
+    return;
+  }
+  /*!
+  ** 加载未加载过的页面
+  */
   gux.delayToLoad = setTimeout(async () => {
     if (gux.presentPageObj) {
       gux.presentPageObj.page.parentElement.style.display = 'none';
@@ -49,62 +68,39 @@ gux.navigateTo = async function (url, opt, clear) {
     let html = await xhr.get({
       url: url + (url.indexOf('?') == -1 ? '?' : '&') + new Date().getTime(),
     }, 'GET');
-    gux.reload(main, url, html, opt);
-  }, 400);
+    gux.reload(container, url, html, opt);
+  }, 200);
 };
 
-gux.switchTab = function(url, opt) {
-  xhr.get({
-    url: url,
-  }).then(resp => {
-    if (opt.title) {
-      pageIndex.setTitle(opt.title);
-    }
-    if (opt.noNavigationBar === true) {
-      pageIndex.hideNavigationBar();
-    } else {
-      pageIndex.showNavigationBar();
-    }
-
-    let page = dom.append(pageIndex.container, resp, true);
-    if (page && page.id) {
-      window[page.id].show(opt.params || {});
-      gux.presentPageObj = window[page.id];
-    }
-
-    if (opt.noPull2Refresh === true) {
-      pageIndex.uninstallPull2Refresh();
-    } else {
-      pageIndex.installPull2Refresh();
-    }
-  });
-};
-
-gux.navigateWidget = function (url, container, opt) {
+gux.navigateTo = async function (url, opt, clear) {
   clearTimeout(gux.delayToLoad);
-  gux.delayToLoad = setTimeout(() => {
-    if (container.children[0]) {
-      container.children[0].classList.remove('in');
-      container.children[0].classList.add('out');
+  if (typeof clear === "undefined") clear = false;
+  let container = document.getElementById('container');
+
+  gux.delayToLoad = setTimeout(async () => {
+    if (gux.presentPageObj && clear !== false) {
+      gux.presentPageObj.page.parentElement.remove();
+      if (gux.presentPageObj.destroy) {
+        gux.presentPageObj.destroy();
+      }
+      delete gux.presentPageObj;
     }
-    setTimeout(async () => {
-      container.innerHTML = '';
-      let html = await xhr.asyncGet({
-        url: url,
-      }, 'GET');
-      gux.replace(container, url, html, opt);
-    }, 400);
+    let html = await xhr.get({
+      url: url + (url.indexOf('?') == -1 ? '?' : '&') + new Date().getTime(),
+    }, 'GET');
+    gux.reload(container, url, html, opt);
   }, 200);
 };
 
 gux.navigateBack = function (opt) {
   clearTimeout(gux.delayToLoad);
   gux.delayToLoad = setTimeout(() => {
-    let main = document.querySelector('main');
-    let latest = main.children[main.children.length - 2];
+    let container = document.getElementById('container');
+    let latest = container.children[container.children.length - 2];
 
-    gux.presentPageObj.page.classList.remove('in');
-    gux.presentPageObj.page.classList.add('out');
+    let pageContainer = gux.presentPageObj.page.parentElement;
+    pageContainer.classList.remove('in');
+    pageContainer.classList.add('out');
 
     setTimeout(() => {
       gux.presentPageObj.page.parentElement.remove();
@@ -113,46 +109,215 @@ gux.navigateBack = function (opt) {
       }
       delete gux.presentPageObj;
 
-      latest.style.display = '';
+      // latest.style.display = '';
       gux.presentPageObj = window[latest.getAttribute('gux-page-id')];
-      gux.presentPageObj.page.classList.remove('out');
-      gux.presentPageObj.page.classList.add('in');
 
-      gux.setTitleAndIcon(latest.getAttribute('gux-page-title'),
-        latest.getAttribute('gux-page-icon'));
-    }, 400 /*同CSS中的动画效果配置时间一致*/);
+      let pageContainer = gux.presentPageObj.page.parentElement;
+
+      if (gux.presentPageObj.noBottomNavigator == true) {
+        pageIndex.hideBottomNavigator();
+      } else {
+        pageIndex.showBottomNavigator();
+      }
+    }, 600 /*同CSS中的动画效果配置时间一致*/);
   }, 200);
 };
 
-gux.reload = function (main, url, html, opt) {
+/*!
+** 加载页面的核心函数，处理了导航栏和页面的渲染，同时根据页面对象的设置决定
+** 是否显示和如何显示导航栏，医技底部导航栏。如果目标页不存在或者加载失败，
+** 则显示“正在建设中”的页面。
+*/
+gux.reload = function (container, url, html, opt) {
   opt = opt || {};
-  let fragmentContainer = dom.element(`<div style="height: 100%; width: 100%;"></div>`);
+  let fragmentContainer = dom.element(`<div class="gx page" style="height: 100%; width: 100%;position:fixed;top:0;"></div>`);
   let range = document.createRange();
   let fragment = range.createContextualFragment(html);
   fragmentContainer.appendChild(fragment);
   let page = dom.find('[id^=page]', fragmentContainer);
-  let pageId = page.getAttribute('id');
+  if (!page) {
+    fragment = range.createContextualFragment(`
+<div id="pageUnderConstruction" class="page" style="overflow-y:auto;">
+  <div class="gx-d-flex gx-w-full gx-h-full">
+    <img class="gx-m-auto" src="/img/app/under-construction.png" style="width:80%;">
+  </div>
+</div>
+<script>
+function PageUnderConstruction() {
+  this.page = document.getElementById('pageUnderConstruction');
+  this.title = '正在建设中...';
+  this.noBottomNavigator = true;
+}
 
-  main.appendChild(fragmentContainer);
+PageUnderConstruction.prototype.initialize = function() {
+  dom.init(this, this.page);
+  this.page.style.height = app.getViewHeight() + 'px';
+};
+
+PageUnderConstruction.prototype.show = function() {
+  this.initialize();
+};
+
+pageUnderConstruction = new PageUnderConstruction();
+</script>
+    `);
+    fragmentContainer.appendChild(fragment);  
+    page = dom.find('[id^=page]', fragmentContainer);
+  }
+  let pageId = page.getAttribute('id');
+  page.style.height = page.parentElement.parentElement.style.height;
+  page.style.overflowY = 'auto';
+
+  container.appendChild(fragmentContainer);
 
   fragmentContainer.setAttribute('gux-page-id', pageId);
   fragmentContainer.setAttribute('gux-page-url', url);
 
   if (opt.title) {
     fragmentContainer.setAttribute('gux-page-title', opt.title);
+  }
+  if (opt.icon) {
     fragmentContainer.setAttribute('gux-page-icon', opt.icon || '');
   }
 
   gux.presentPageObj = window[pageId];
-  gux.presentPageObj.page.classList.add('in');
 
+  if (gux.presentPageObj.noNavigationBar !== true) {
+    opt.title = gux.presentPageObj.title || opt.title;
+    opt.icon = gux.presentPageObj.icon || opt.icon;
+    if (typeof opt.icon === 'undefined') {
+      opt.icon = '<i class="gx-i gx-i-arrow-left gx-pos-relative gx-text-inverse gx-fs-28 gx-fb" style="bottom: -50%;left: 18px;"></i>';
+    }
+    let navigationBar = dom.templatize(`
+      <div widget-id="navigation-bar" 
+            class="gx-bg-primary gx-d-flex gx-w-full" 
+            style="height:{{height}}px;position:fixed;top:0;z-index:99;">
+        <div widget-id="navigation-bar-icon" style="width: 100px;">{{{icon}}}</div>
+        <div class="gx-d-flex gx-py-8" style="flex: 1;align-items: end;justify-content: center;">
+          <div id="navigation-bar-title" class="gx-text-inverse gx-fs-22">{{title}}</div>
+        </div>
+        <div style="width: 100px;"></div>
+      </div>
+    `, {
+      height: (gux.safeTop + gux.navigationBarHeight),
+      ...opt,
+    });
+    let page = gux.presentPageObj.page;
+    /*!
+    ** 自定义导航栏
+    */
+    if (gux.presentPageObj.navigationBar) {
+      navigationBar.innerHTML = '';
+      navigationBar.appendChild(gux.presentPageObj.navigationBar);
+    }
+    page.style.top = (gux.safeTop + gux.navigationBarHeight) + 'px';
+    fragmentContainer.insertBefore(navigationBar, fragmentContainer.firstChild);
+
+    let butttonBack = dom.find('.gx-i.gx-i-arrow-left', fragmentContainer);
+    if (butttonBack != null) {
+      butttonBack.onclick = (ev) => {
+        gux.navigateBack();
+      }
+    }
+  }
+
+  /*!
+  **
+  */
   let params = util.getParameters(url);
   gux.presentPageObj.show(params);
 
-  gux.setTitleAndIcon(opt.title, opt.icon);
+  if (gux.presentPageObj.noBottomNavigator == true) {
+    pageIndex.hideBottomNavigator();
+  } else {
+    pageIndex.showBottomNavigator();
+  }
+
+  /*!
+  ** 动画加载页面。
+  */
+  fragmentContainer.classList.add('in');
+  setTimeout(() => {
+    fragmentContainer.classList.remove('in');
+  }, 600);
+
+  /*!
+  ** 成功回调。
+  */
   if (opt.success) {
     opt.success();
   }
+};
+
+/*!
+** 从底部向上弹出的界面，并且附带屏蔽页。
+*/
+gux.popup = function (opt) {
+  let container = opt.container || document.body;
+  let content = opt.content;
+  let popup = dom.templatize(`
+    <div class="gx popup-container">
+      <div class="popup-mask"></div>
+      <div class="popup-bottom in">
+        <div class="popup-title">
+          <button class="cancel" style="right:8px;">关闭</button>
+        </div>
+        <div class="popup-content" style="height: {{height}}px; width: 100%;"></div>
+      </div>
+    </div>
+  `, opt);
+  
+
+  let bottom = dom.find('.popup-bottom', popup);
+  let mask = dom.find('.popup-mask', popup);
+  let cancel = dom.find('.cancel', popup);
+
+  bottom.children[1].appendChild(content);
+  dom.bind(cancel, 'click', ev => {
+    bottom.classList.remove('in');
+    bottom.classList.add('out');
+    setTimeout(() => {
+      bottom.parentElement.remove();
+    }, 300);
+  });
+
+  container.appendChild(popup);
+};
+
+gux.dialog = function (opt) {
+  let confirm = opt.confirm;
+  let cancel = opt.cancel;
+  let content = opt.content;
+  let mask = dom.element(`
+    <div style="background: rgba(0,0,0,0.3); position: absolute; top: 0; left: 0; 
+                z-index: 9999; height: 100%; width: 100%; display: flex;">
+      <div class="dialog m-auto" 
+           style="width: 88%; min-height: 400px; position: relative;
+                  background: var(--color-white);">
+        <div class="dialog-body">${content}</div>
+        <div class="dialog-footer" 
+             style="font-size: 24px; font-weight: bold; position: absolute;
+                    width: 100%; height: 56px; bottom: 0; display: table;">
+          <button style="background: var(--color-error); width: 50%; display: inline-table;
+                         color: var(--color-text-primary-dark); border: none; 
+                         line-height: 56px;">取  消</button>
+          <button style="background: var(--color-primary); width: 50%; display: inline-table;
+                         color: var(--color-text-primary-dark); border: none; 
+                         line-height: 56px;">确  定</button>
+        </div>
+      </div>
+    </div>
+  `);
+  let buttons = mask.querySelectorAll('button');
+  dom.bind(buttons[0], 'click', ev => {
+    mask.remove();
+    if (cancel) cancel();
+  });
+  dom.bind(buttons[1], 'click', ev => {
+    mask.remove();
+    if (confirm) confirm();
+  });
+  document.body.appendChild(mask);
 };
 
 gux.replace = function (container, url, html, opt) {
@@ -180,26 +345,6 @@ gux.replace = function (container, url, html, opt) {
 
   if (opt.success) {
     opt.success();
-  }
-};
-
-gux.setTitleAndIcon = function(title, icon) {
-  let bottomDiv = dom.find('.bottom-navigator');
-  let titleDiv = dom.find('header h1.title');
-  titleDiv.innerText = title;
-  let iconDiv = dom.find('header div.left');
-  if (icon) {
-    iconDiv.innerHTML = icon;
-    if (bottomDiv != null)
-      bottomDiv.style.display = '';
-    iconDiv.onclick = (ev) => {}
-  } else {
-    iconDiv.innerHTML = '<i class="fas fa-arrow-left button icon"></i>';
-    if (bottomDiv != null)
-      bottomDiv.style.display = 'none';
-    iconDiv.onclick = (ev) => {
-      gux.navigateBack()
-    }
   }
 };
 
@@ -407,42 +552,6 @@ gux.loading = function(callback) {
     if (callback)
       callback(el);
   }, 300);
-};
-
-gux.dialog = function (opt) {
-  let confirm = opt.confirm;
-  let cancel = opt.cancel;
-  let content = opt.content;
-  let mask = dom.element(`
-    <div style="background: rgba(0,0,0,0.3); position: absolute; top: 0; left: 0; 
-                z-index: 9999; height: 100%; width: 100%; display: flex;">
-      <div class="dialog m-auto" 
-           style="width: 88%; min-height: 400px; position: relative;
-                  background: var(--color-white);">
-        <div class="dialog-body">${content}</div>
-        <div class="dialog-footer" 
-             style="font-size: 24px; font-weight: bold; position: absolute;
-                    width: 100%; height: 56px; bottom: 0; display: table;">
-          <button style="background: var(--color-error); width: 50%; display: inline-table;
-                         color: var(--color-text-primary-dark); border: none; 
-                         line-height: 56px;">取  消</button>
-          <button style="background: var(--color-primary); width: 50%; display: inline-table;
-                         color: var(--color-text-primary-dark); border: none; 
-                         line-height: 56px;">确  定</button>
-        </div>
-      </div>
-    </div>
-  `);
-  let buttons = mask.querySelectorAll('button');
-  dom.bind(buttons[0], 'click', ev => {
-    mask.remove();
-    if (cancel) cancel();
-  });
-  dom.bind(buttons[1], 'click', ev => {
-    mask.remove();
-    if (confirm) confirm();
-  });
-  document.body.appendChild(mask);
 };
 
 pStart = { x: 0, y: 0 };

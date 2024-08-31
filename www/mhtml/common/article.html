@@ -1,0 +1,33 @@
+<div id="pageArticle" class="page" style="overflow-y:auto;">
+  <div widget-id="widgetContent" class="gx-p-16 gx-w-full gx-h-full">
+    
+  </div>
+</div>
+<script>
+function PageArticle() {
+  this.page = document.getElementById('pageArticle');
+  this.title = '文章浏览';
+  this.noBottomNavigator = true;
+}
+
+PageArticle.prototype.initialize = function(params) {
+  dom.init(this, this.page);
+  this.page.style.height = app.getViewHeight() + 'px';
+
+  sdk.fetchArticle({
+    articleId: params.articleId,
+  }).then(resp => {
+    this.widgetContent.innerHTML = resp.content;
+    let imgs = this.widgetContent.querySelectorAll('img');
+    for (let img of imgs) {
+      img.style.width = '100%';
+    }
+  });
+};
+
+PageArticle.prototype.show = function(params) {
+  this.initialize(params);
+};
+
+pageArticle = new PageArticle();
+</script>

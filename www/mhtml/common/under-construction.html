@@ -1,0 +1,22 @@
+<div id="pageUnderConstruction" class="page" style="overflow-y:auto;">
+  <div class="gx-d-flex gx-w-full gx-h-full">
+    <img class="gx-m-auto" src="/img/app/under-construction.png" style="width:80%;">
+  </div>
+</div>
+<script>
+function PageUnderConstruction() {
+  this.page = document.getElementById('pageUnderConstruction');
+  this.title = '正在建设中...';
+}
+
+PageUnderConstruction.prototype.initialize = function() {
+  dom.init(this, this.page);
+  this.page.style.height = app.getViewHeight() + 'px';
+};
+
+PageUnderConstruction.prototype.show = function() {
+  this.initialize();
+};
+
+pageUnderConstruction = new PageUnderConstruction();
+</script>

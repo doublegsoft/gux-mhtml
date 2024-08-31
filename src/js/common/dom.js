@@ -163,9 +163,9 @@ dom.model = function(selector, data) {
       for (const key in data) {
         if (key.indexOf('||') == 0 || key.indexOf('//') == 0 || key.indexOf('>>') == 0) continue;
         if (typeof data[key] === 'object') {
-          elm.setAttribute(utils.nameAttr(key), JSON.stringify(data[key]));
+          elm.setAttribute(util.nameAttr(key), JSON.stringify(data[key]));
         } else {
-          elm.setAttribute(utils.nameAttr(key), data[key]);
+          elm.setAttribute(util.nameAttr(key), data[key]);
         }
       }
     } else {
@@ -173,9 +173,9 @@ dom.model = function(selector, data) {
         let key = attrs[i];
         if (key.indexOf('||') == 0 || key.indexOf('//') == 0 || key.indexOf('>>') == 0) continue;
         if (typeof data[key] === 'object') {
-          elm.setAttribute(utils.nameAttr(key), JSON.stringify(data[key]));
+          elm.setAttribute(util.nameAttr(key), JSON.stringify(data[key]));
         } else {
-          elm.setAttribute(utils.nameAttr(key), data[key]);
+          elm.setAttribute(util.nameAttr(key), data[key]);
         }
       }
     }
@@ -185,12 +185,12 @@ dom.model = function(selector, data) {
       if (attr.name.indexOf('data-model-') == 0) {
         if (attr.value.indexOf('{') == 0) {
           try {
-            ret[utils.nameVar(attr.name.slice('data-model-'.length))] = JSON.parse(attr.value);
+            ret[util.nameVar(attr.name.slice('data-model-'.length))] = JSON.parse(attr.value);
           } catch (err) {
-            ret[utils.nameVar(attr.name.slice('data-model-'.length))] = attr.value;
+            ret[util.nameVar(attr.name.slice('data-model-'.length))] = attr.value;
           }
         } else {
-          ret[utils.nameVar(attr.name.slice('data-model-'.length))] = attr.value;
+          ret[util.nameVar(attr.name.slice('data-model-'.length))] = attr.value;
         }
       }
     });
@@ -217,10 +217,10 @@ dom.collect = function (selector, name) {
     let item = {};
     if (Array.isArray(name)) {
       for (let j = 0; j < name.length; j++) {
-        item[name[j]] = elements[i].getAttribute(utils.nameAttr(name[j]));
+        item[name[j]] = elements[i].getAttribute(util.nameAttr(name[j]));
       }
     } else {
-      item[name] = elements.getAttribute(utils.nameAttr(name[j]));
+      item[name] = elements.getAttribute(util.nameAttr(name[j]));
     }
     ret.push(item);
   }
@@ -246,10 +246,10 @@ dom.propagate = function (container, data, name, creator) {
   let element = creator(data);
   if (Array.isArray(name)) {
     for (let i = 0; i < name.length; i++) {
-      element.setAttribute(utils.nameAttr(name[i]), data[name[i]]);
+      element.setAttribute(util.nameAttr(name[i]), data[name[i]]);
     }
   } else {
-    element.setAttribute(utils.nameAttr(name), data[name]);
+    element.setAttribute(util.nameAttr(name), data[name]);
   }
   container.appendChild(element);
 };

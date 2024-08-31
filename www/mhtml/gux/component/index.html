@@ -1,4 +1,4 @@
-<div id="pageComponentIndex" class="gx page">
+<div id="pageComponentIndex" class="page">
   <div widget-id="widgetAd" class="swiper ad" style="height: 300px;">
     <div class="swiper-wrapper">
       <div class="swiper-slide">
@@ -55,6 +55,8 @@
 
 function PageComponentIndex() {
   this.page = document.getElementById('pageComponentIndex');
+  this.noNavigationBar = false;
+  this.noBottomNavigator = true;
 }
 
 PageComponentIndex.prototype.initialize = function() {

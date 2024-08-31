@@ -10,14 +10,14 @@ let concat = require('gulp-concat');
 
 gulp.task('dist', async function() {
   gulp.src(['src/js/common/*.js', 'src/js/widget/*.js'])
-    .pipe(concat('./gux.desktop.js'))
+    .pipe(concat('./gux.mobile.js'))
     .pipe(gulp.dest('./dist/'));
 
   gulp.src(['src/js/common/*.js', 'src/js/widget/*.js'])
     .pipe(babel({
       presets: [['@babel/preset-env', {modules: false}]]
     }))
-    .pipe(concat('./gux.desktop.min.js'))
+    .pipe(concat('./gux.mobile.min.js'))
     .pipe(uglify({}))
     .pipe(gulp.dest('./dist/'));
 
@@ -26,7 +26,7 @@ gulp.task('dist', async function() {
     .pipe(concat('./gux.mobile.css'))
     .pipe(gulp.dest('./dist/'));
 
-  gulp.src(['src/css/gux.css'])
+  gulp.src(['src/css/*.css'])
       .pipe(concat('./gux.mobile.min.css'))
       .pipe(uglifycss())
       .pipe(gulp.dest('./dist/'));
